@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Send, Paperclip, ArrowLeft, Loader2, X, Image as ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from 'utils';
 import { LanguageProvider, useLanguage } from '../components/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
 import MessageBubble from '../components/MessageBubble';
@@ -130,7 +129,7 @@ function ChatContent() {
             {/* Header */}
             <header className="bg-white border-b shadow-sm px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <Link to={createPageUrl('Home')}>
+                    <Link to="/Home">
                         <Button variant="ghost" size="icon">
                             <ArrowLeft className="w-5 h-5" />
                         </Button>

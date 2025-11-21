@@ -6,7 +6,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { LanguageProvider, useLanguage } from '../components/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
 import { base44 } from '@/api/base44Client';
-import { createPageUrl } from 'utils';
 
 function HomeContent() {
     const { language } = useLanguage();
@@ -122,7 +121,7 @@ function HomeContent() {
                                 {getText(content.whatsappBtn)}
                             </Button>
                         </a>
-                        <Link to={createPageUrl('Chat')}>
+                        <Link to="/Chat">
                             <Button size="lg" variant="outline" className="border-green-600 text-green-700 hover:bg-green-50 text-lg px-8 py-6 w-full sm:w-auto">
                                 {getText(content.webBtn)}
                             </Button>

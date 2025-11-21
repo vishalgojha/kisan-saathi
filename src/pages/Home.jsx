@@ -39,8 +39,8 @@ function HomeContent() {
         features: [
             {
                 icon: Sprout,
-                title: { hi: 'फसल सलाह', en: 'Crop Advisory' },
-                desc: { hi: 'बीमारी की पहचान, इलाज और खेती के टिप्स', en: 'Disease diagnosis, treatment & farming tips' }
+                title: { hi: 'फसल सलाह', en: 'Expert Crop Advisory' },
+                desc: { hi: 'फोटो से बीमारी पहचान, दवा और सटीक खुराक', en: 'Photo diagnosis, treatments & precise dosages' }
             },
             {
                 icon: TrendingUp,

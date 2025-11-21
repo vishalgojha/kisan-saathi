@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Send, Paperclip, ArrowLeft, Loader2 } from 'lucide-react';
+import { Send, Paperclip, ArrowLeft, Loader2, X, Image as ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from 'utils';
 import { LanguageProvider, useLanguage } from '../components/LanguageContext';
@@ -17,13 +17,18 @@ function ChatContent() {
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [uploadingFiles, setUploadingFiles] = useState(false);
     const messagesEndRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     const content = {
         back: { hi: 'वापस जाएं', en: 'Back' },
         title: { hi: 'किसान मित्र चैट', en: 'KisanMitra Chat' },
         placeholder: { hi: 'अपना सवाल यहाँ लिखें...', en: 'Type your question here...' },
-        loading: { hi: 'लोड हो रहा है...', en: 'Loading...' }
+        loading: { hi: 'लोड हो रहा है...', en: 'Loading...' },
+        attachImage: { hi: 'फोटो भेजें', en: 'Attach Image' },
+        uploadingImage: { hi: 'अपलोड हो रहा है...', en: 'Uploading...' }
     };
 
     const getText = (obj) => obj[language];
@@ -63,18 +68,44 @@ function ChatContent() {
         }
     };
 
+    const handleFileSelect = async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        setUploadingFiles(true);
+        try {
+            const uploadedUrls = [];
+            for (const file of files) {
+                const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                uploadedUrls.push(file_url);
+            }
+            setSelectedFiles(prev => [...prev, ...uploadedUrls]);
+        } catch (error) {
+            console.error('Error uploading files:', error);
+        } finally {
+            setUploadingFiles(false);
+        }
+    };
+
+    const removeFile = (index) => {
+        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!inputMessage.trim() || !conversation || isSending) return;
+        if ((!inputMessage.trim() && selectedFiles.length === 0) || !conversation || isSending) return;
 
         setIsSending(true);
         const messageText = inputMessage;
+        const fileUrls = [...selectedFiles];
         setInputMessage('');
+        setSelectedFiles([]);
 
         try {
             await base44.agents.addMessage(conversation, {
                 role: 'user',
-                content: messageText
+                content: messageText || 'Please analyze this image',
+                file_urls: fileUrls.length > 0 ? fileUrls : undefined
             });
         } catch (error) {
             console.error('Error sending message:', error);
@@ -115,17 +146,31 @@ function ChatContent() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
                 {messages.length === 0 && (
-                    <div className="text-center py-12">
-                        <p className="text-gray-500 text-lg">
-                            {language === 'hi' 
-                                ? '👋 नमस्ते! मुझसे कुछ भी पूछें' 
-                                : '👋 Hello! Ask me anything'}
-                        </p>
-                        <p className="text-sm text-gray-400 mt-2">
-                            {language === 'hi'
-                                ? 'फसल, मंडी, मौसम - कुछ भी!'
-                                : 'Crops, markets, weather - anything!'}
-                        </p>
+                    <div className="text-center py-12 px-4">
+                        <div className="max-w-md mx-auto">
+                            <p className="text-gray-700 text-lg font-semibold mb-4">
+                                {language === 'hi' 
+                                    ? '👋 नमस्ते! मैं KisanMitra हूँ' 
+                                    : '👋 Hello! I am KisanMitra'}
+                            </p>
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left space-y-2">
+                                <p className="text-sm text-gray-700 font-medium">
+                                    {language === 'hi' ? 'मैं आपकी मदद कर सकता हूँ:' : 'I can help you with:'}
+                                </p>
+                                <ul className="text-sm text-gray-600 space-y-1">
+                                    <li>🌾 {language === 'hi' ? 'फसल की बीमारी पहचान' : 'Crop disease diagnosis'}</li>
+                                    <li>🐛 {language === 'hi' ? 'कीट नियंत्रण सलाह' : 'Pest control advice'}</li>
+                                    <li>💊 {language === 'hi' ? 'दवा और खुराक जानकारी' : 'Treatment & dosage info'}</li>
+                                    <li>💰 {language === 'hi' ? 'मंडी के रेट' : 'Market prices'}</li>
+                                    <li>🌤️ {language === 'hi' ? 'मौसम की जानकारी' : 'Weather updates'}</li>
+                                </ul>
+                                <p className="text-xs text-green-700 mt-3 font-medium">
+                                    📸 {language === 'hi' 
+                                        ? 'फसल की फोटो भेजें बेहतर सलाह के लिए' 
+                                        : 'Send crop photos for better advice'}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 )}
                 {messages.map((message, idx) => (
@@ -136,18 +181,61 @@ function ChatContent() {
 
             {/* Input */}
             <div className="border-t bg-white p-4">
+                {/* Image Preview */}
+                {selectedFiles.length > 0 && (
+                    <div className="mb-3 flex flex-wrap gap-2">
+                        {selectedFiles.map((fileUrl, idx) => (
+                            <div key={idx} className="relative">
+                                <img 
+                                    src={fileUrl} 
+                                    alt="Upload preview" 
+                                    className="w-20 h-20 object-cover rounded-lg border-2 border-green-200"
+                                />
+                                <button
+                                    onClick={() => removeFile(idx)}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 <form onSubmit={handleSendMessage} className="flex gap-2">
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleFileSelect}
+                        className="hidden"
+                    />
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingFiles || isSending}
+                        className="border-green-600 text-green-700 hover:bg-green-50"
+                    >
+                        {uploadingFiles ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <ImageIcon className="w-5 h-5" />
+                        )}
+                    </Button>
                     <Input
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         placeholder={getText(content.placeholder)}
                         className="flex-1"
-                        disabled={isSending}
+                        disabled={isSending || uploadingFiles}
                     />
                     <Button 
                         type="submit" 
                         className="bg-green-600 hover:bg-green-700"
-                        disabled={isSending || !inputMessage.trim()}
+                        disabled={isSending || uploadingFiles || (!inputMessage.trim() && selectedFiles.length === 0)}
                     >
                         {isSending ? (
                             <Loader2 className="w-5 h-5 animate-spin" />

@@ -1,6 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { MessageCircle, Sprout, TrendingUp, CloudRain, BookOpen, Phone } from 'lucide-react';
+import { Sprout, TrendingUp, CloudRain, BookOpen, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { LanguageProvider, useLanguage } from '../components/LanguageContext';
@@ -26,10 +25,6 @@ function HomeContent() {
         whatsappBtn: {
             hi: '💬 व्हाट्सएप पर शुरू करें',
             en: '💬 Start on WhatsApp'
-        },
-        webBtn: {
-            hi: '🌐 वेब पर चैट करें',
-            en: '🌐 Chat on Web'
         },
         featuresTitle: {
             hi: 'हम आपकी कैसे मदद करते हैं',
@@ -111,7 +106,7 @@ function HomeContent() {
                         {getText(content.description)}
                     </p>
                     
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <div className="flex justify-center">
                         <a 
                             href={base44.agents.getWhatsAppConnectURL('KisanMitra')} 
                             target="_blank"
@@ -121,11 +116,6 @@ function HomeContent() {
                                 {getText(content.whatsappBtn)}
                             </Button>
                         </a>
-                        <Link to="/Chat">
-                            <Button size="lg" variant="outline" className="border-green-600 text-green-700 hover:bg-green-50 text-lg px-8 py-6 w-full sm:w-auto">
-                                {getText(content.webBtn)}
-                            </Button>
-                        </Link>
                     </div>
                 </div>
 

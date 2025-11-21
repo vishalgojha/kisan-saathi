@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Send, Paperclip, ArrowLeft, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from './utils';
+import { createPageUrl } from 'utils';
 import { LanguageProvider, useLanguage } from '../components/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
 import MessageBubble from '../components/MessageBubble';

@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { LanguageProvider, useLanguage } from '../components/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
 import { base44 } from '@/api/base44Client';
-import { createPageUrl } from './utils';
+import { createPageUrl } from 'utils';
 
 function HomeContent() {
     const { language } = useLanguage();

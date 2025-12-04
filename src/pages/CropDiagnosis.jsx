@@ -198,7 +198,7 @@ function DiagnosisContent() {
                 </div>
             </header>
 
-            <main className="container mx-auto px-6 py-8 max-w-5xl">
+            <main className="container mx-auto px-4 md:px-6 py-6 md:py-8 max-w-5xl">
                 {/* Hero */}
                 <div className="text-center mb-10">
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
@@ -276,7 +276,7 @@ function DiagnosisContent() {
                         )}
 
                         {/* Form Fields */}
-                        <div className="grid md:grid-cols-2 gap-4 mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     {getText(content.cropName)}
@@ -421,7 +421,7 @@ function DiagnosisContent() {
                         )}
 
                         {/* Treatments Grid */}
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             {/* Organic Treatments */}
                             {diagnosis.organic_treatments && diagnosis.organic_treatments.length > 0 && (
                                 <Card className="diagnosis-card border-0 shadow-xl shadow-gray-200/50">
@@ -508,7 +508,7 @@ function DiagnosisContent() {
                                         </div>
                                         <h4 className="font-bold text-xl text-sky-800">{getText(content.prevention)}</h4>
                                     </div>
-                                    <div className="grid md:grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {(language === 'hi' 
                                             ? diagnosis.prevention.measures_hi 
                                             : diagnosis.prevention.measures_en)?.map((measure, idx) => (

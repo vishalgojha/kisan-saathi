@@ -160,7 +160,7 @@ function MandiContent() {
                 </div>
             </header>
 
-            <main className="container mx-auto px-6 py-8 max-w-6xl">
+            <main className="container mx-auto px-4 md:px-6 py-6 md:py-8 max-w-6xl">
                 {/* Hero Search */}
                 <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
@@ -169,8 +169,8 @@ function MandiContent() {
                     <p className="text-gray-600 text-lg mb-8">{getText(content.subtitle)}</p>
                     
                     <Card className="max-w-3xl mx-auto border-0 shadow-xl shadow-gray-200/50 overflow-hidden">
-                        <CardContent className="p-6">
-                            <div className="grid md:grid-cols-4 gap-4">
+                        <CardContent className="p-4 md:p-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                                 <Select value={crop} onValueChange={setCrop}>
                                     <SelectTrigger className="h-14 rounded-xl border-gray-200 bg-gray-50">
                                         <Wheat className="w-4 h-4 mr-2 text-amber-600" />
@@ -205,7 +205,7 @@ function MandiContent() {
                                 <Button 
                                     onClick={fetchPrices} 
                                     disabled={loading || !crop}
-                                    className="h-14 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 rounded-xl shadow-lg shadow-amber-500/25"
+                                    className="h-14 col-span-2 md:col-span-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 rounded-xl shadow-lg shadow-amber-500/25"
                                 >
                                     {loading ? <Loader2 className="animate-spin" /> : <Search className="w-5 h-5 mr-2" />}
                                     {getText(content.search)}
@@ -244,7 +244,7 @@ function MandiContent() {
                             </Card>
                         )}
 
-                        <div className="grid lg:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                             {/* Price Chart */}
                             {chartData && (
                                 <Card className="price-card border-0 shadow-xl shadow-gray-200/50">
@@ -292,7 +292,7 @@ function MandiContent() {
                         </div>
 
                         {/* Market Advice */}
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             {priceData.market_advice && (
                                 <Card className="price-card border-0 shadow-xl shadow-gray-200/50 bg-gradient-to-br from-amber-50 to-orange-50">
                                     <CardContent className="p-6">

@@ -152,7 +152,7 @@ function DashboardContent() {
                 </div>
             )}
 
-            <main className="container mx-auto px-6 py-8 max-w-6xl">
+            <main className="container mx-auto px-4 md:px-6 py-6 md:py-8 max-w-6xl">
                 {!profile ? (
                     <ProfileSetup onSave={saveProfile} language={language} />
                 ) : (
@@ -181,67 +181,63 @@ function DashboardContent() {
                         </Card>
 
                         {/* Dashboard Grid */}
-                        <div className="grid lg:grid-cols-3 gap-6">
-                            {/* Left Column - Weather */}
-                            <div className="lg:col-span-1 space-y-6">
-                                <div className="dashboard-card">
-                                    <DashboardWeather 
-                                        location={profile.location} 
-                                        language={language} 
-                                    />
-                                </div>
-                                
-                                {/* WhatsApp CTA */}
-                                <Card className="dashboard-card border-0 shadow-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white">
-                                    <CardContent className="p-6 text-center">
-                                        <MessageCircle className="w-10 h-10 mx-auto mb-3" />
-                                        <h3 className="font-bold text-lg mb-2">{getText(content.whatsapp)}</h3>
-                                        <a 
-                                            href={base44.agents.getWhatsAppConnectURL('KisanMitra')} 
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            <Button className="bg-white text-emerald-600 hover:bg-gray-100 rounded-xl w-full">
-                                                <MessageCircle className="w-4 h-4 mr-2" />
-                                                WhatsApp
-                                            </Button>
-                                        </a>
-                                    </CardContent>
-                                </Card>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                            {/* Weather */}
+                            <div className="dashboard-card">
+                                <DashboardWeather 
+                                    location={profile.location} 
+                                    language={language} 
+                                />
+                            </div>
+                            
+                            {/* Prices */}
+                            <div className="dashboard-card">
+                                <DashboardPrices 
+                                    crops={profile.crops}
+                                    state={profile.state}
+                                    favoriteMandis={profile.favorite_mandis}
+                                    onToggleFavorite={toggleFavoriteMandi}
+                                    language={language}
+                                />
                             </div>
 
-                            {/* Middle Column - Prices & Schemes */}
-                            <div className="lg:col-span-1 space-y-6">
-                                <div className="dashboard-card">
-                                    <DashboardPrices 
-                                        crops={profile.crops}
-                                        state={profile.state}
-                                        favoriteMandis={profile.favorite_mandis}
-                                        onToggleFavorite={toggleFavoriteMandi}
-                                        language={language}
-                                    />
-                                </div>
-                                <div className="dashboard-card">
-                                    <DashboardSchemes 
-                                        state={profile.state}
-                                        crops={profile.crops}
-                                        favoriteSchemes={profile.favorite_schemes}
-                                        onToggleFavorite={toggleFavoriteScheme}
-                                        language={language}
-                                    />
-                                </div>
+                            {/* Schemes */}
+                            <div className="dashboard-card">
+                                <DashboardSchemes 
+                                    state={profile.state}
+                                    crops={profile.crops}
+                                    favoriteSchemes={profile.favorite_schemes}
+                                    onToggleFavorite={toggleFavoriteScheme}
+                                    language={language}
+                                />
                             </div>
 
-                            {/* Right Column - Advisory */}
-                            <div className="lg:col-span-1">
-                                <div className="dashboard-card">
-                                    <DashboardAdvisory 
-                                        crops={profile.crops}
-                                        state={profile.state}
-                                        language={language}
-                                    />
-                                </div>
+                            {/* Advisory */}
+                            <div className="dashboard-card md:col-span-2 lg:col-span-2">
+                                <DashboardAdvisory 
+                                    crops={profile.crops}
+                                    state={profile.state}
+                                    language={language}
+                                />
                             </div>
+
+                            {/* WhatsApp CTA */}
+                            <Card className="dashboard-card border-0 shadow-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+                                <CardContent className="p-5 text-center">
+                                    <MessageCircle className="w-8 h-8 mx-auto mb-2" />
+                                    <h3 className="font-bold mb-2">{getText(content.whatsapp)}</h3>
+                                    <a 
+                                        href={base44.agents.getWhatsAppConnectURL('KisanMitra')} 
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <Button className="bg-white text-emerald-600 hover:bg-gray-100 rounded-xl w-full">
+                                            <MessageCircle className="w-4 h-4 mr-2" />
+                                            WhatsApp
+                                        </Button>
+                                    </a>
+                                </CardContent>
+                            </Card>
                         </div>
                     </div>
                 )}

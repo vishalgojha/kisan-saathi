@@ -229,8 +229,8 @@ export default function ImageAnnotator({ imageUrl, onSave, onCancel }) {
     return (
         <div ref={containerRef} className="bg-white rounded-2xl shadow-2xl overflow-hidden">
             {/* Toolbar */}
-            <div className="bg-gray-50 border-b border-gray-200 p-4">
-                <div className="flex flex-wrap items-center gap-4">
+            <div className="bg-gray-50 border-b border-gray-200 p-3 md:p-4">
+                <div className="flex flex-wrap items-center gap-2 md:gap-4">
                     {/* Tools */}
                     <div className="flex items-center gap-1 bg-white rounded-xl p-1 shadow-sm">
                         {tools.map(t => (
@@ -259,7 +259,7 @@ export default function ImageAnnotator({ imageUrl, onSave, onCancel }) {
                     </div>
 
                     {/* Brush Size */}
-                    <div className="flex items-center gap-2 min-w-[120px]">
+                    <div className="hidden sm:flex items-center gap-2 min-w-[120px]">
                         <span className="text-xs text-gray-500">Size</span>
                         <Slider
                             value={[brushSize]}

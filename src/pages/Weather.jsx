@@ -97,7 +97,7 @@ function WeatherContent() {
                 </div>
             </header>
 
-            <main ref={containerRef} className="container mx-auto px-6 py-8 max-w-5xl">
+            <main ref={containerRef} className="container mx-auto px-4 md:px-6 py-6 md:py-8 max-w-5xl">
                 {/* Hero Search */}
                 <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
@@ -172,22 +172,22 @@ function WeatherContent() {
                         {/* Forecast */}
                         {weatherData.forecast && (
                             <Card className="weather-card border-0 shadow-xl shadow-gray-200/50">
-                                <CardContent className="p-6">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-6">{getText(content.forecast)}</h3>
-                                    <div className="grid grid-cols-5 gap-3">
+                                <CardContent className="p-4 md:p-6">
+                                    <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6">{getText(content.forecast)}</h3>
+                                    <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
                                         {weatherData.forecast.slice(0, 5).map((day, idx) => (
-                                            <div key={idx} className="text-center p-4 bg-gradient-to-b from-gray-50 to-white rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow">
-                                                <p className="font-semibold text-gray-700 text-sm mb-3">
+                                            <div key={idx} className={`text-center p-3 md:p-4 bg-gradient-to-b from-gray-50 to-white rounded-xl md:rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow ${idx >= 3 ? 'hidden md:block' : ''}`}>
+                                                <p className="font-semibold text-gray-700 text-xs md:text-sm mb-2 md:mb-3">
                                                     {language === 'hi' ? day.day_name_hi : day.day_name}
                                                 </p>
                                                 {getWeatherIcon(day.condition, 'small')}
-                                                <div className="mt-3">
-                                                    <span className="text-lg font-bold text-gray-900">{day.max_temp}°</span>
-                                                    <span className="text-gray-400 mx-1">/</span>
-                                                    <span className="text-gray-500">{day.min_temp}°</span>
+                                                <div className="mt-2 md:mt-3">
+                                                    <span className="text-base md:text-lg font-bold text-gray-900">{day.max_temp}°</span>
+                                                    <span className="text-gray-400 mx-0.5 md:mx-1">/</span>
+                                                    <span className="text-gray-500 text-sm">{day.min_temp}°</span>
                                                 </div>
-                                                <p className="text-xs text-blue-600 mt-2 bg-blue-50 py-1 px-2 rounded-full">
-                                                    <Droplets className="w-3 h-3 inline mr-1" />
+                                                <p className="text-xs text-blue-600 mt-2 bg-blue-50 py-1 px-1.5 md:px-2 rounded-full">
+                                                    <Droplets className="w-3 h-3 inline mr-0.5 md:mr-1" />
                                                     {day.rain_chance}%
                                                 </p>
                                             </div>
@@ -198,7 +198,7 @@ function WeatherContent() {
                         )}
 
                         {/* Advisory Cards */}
-                        <div className="grid md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {weatherData.farming_advisory && (
                                 <Card className="weather-card border-0 shadow-xl shadow-gray-200/50 bg-gradient-to-br from-emerald-50 to-green-50">
                                     <CardContent className="p-6">

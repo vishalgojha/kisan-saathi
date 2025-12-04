@@ -1,10 +1,12 @@
 import React from 'react';
-import { Sprout, TrendingUp, CloudRain, BookOpen, Phone } from 'lucide-react';
+import { Sprout, TrendingUp, CloudRain, BookOpen, Phone, Camera, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { LanguageProvider, useLanguage } from '../components/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
 import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 function HomeContent() {
     const { language } = useLanguage();
@@ -32,24 +34,32 @@ function HomeContent() {
         },
         features: [
             {
-                icon: Sprout,
-                title: { hi: 'फसल सलाह', en: 'Expert Crop Advisory' },
-                desc: { hi: 'फोटो से बीमारी पहचान, दवा और सटीक खुराक', en: 'Photo diagnosis, treatments & precise dosages' }
+                icon: Camera,
+                title: { hi: 'फसल जांच', en: 'Crop Diagnosis' },
+                desc: { hi: 'फोटो से बीमारी पहचान, दवा और सटीक खुराक', en: 'Photo diagnosis, treatments & precise dosages' },
+                page: 'CropDiagnosis',
+                color: 'green'
             },
             {
                 icon: TrendingUp,
-                title: { hi: 'मंडी रेट', en: 'Mandi Rates' },
-                desc: { hi: 'आज के ताज़ा भाव और सबसे अच्छा बाजार', en: 'Latest prices & best markets' }
+                title: { hi: 'मंडी भाव', en: 'Mandi Prices' },
+                desc: { hi: 'आज के ताज़ा भाव और सबसे अच्छा बाजार', en: 'Latest prices & best markets' },
+                page: 'MandiPrices',
+                color: 'amber'
             },
             {
                 icon: CloudRain,
-                title: { hi: 'मौसम अपडेट', en: 'Weather Updates' },
-                desc: { hi: 'बारिश की भविष्यवाणी और खेती कैलेंडर', en: 'Rain forecast & farming calendar' }
+                title: { hi: 'मौसम जानकारी', en: 'Weather Info' },
+                desc: { hi: 'बारिश की भविष्यवाणी और खेती सलाह', en: 'Rain forecast & farming tips' },
+                page: 'Weather',
+                color: 'blue'
             },
             {
                 icon: BookOpen,
                 title: { hi: 'सरकारी योजनाएं', en: 'Govt Schemes' },
-                desc: { hi: 'सब्सिडी, लोन और योजनाओं की जानकारी', en: 'Subsidy, loans & scheme information' }
+                desc: { hi: 'सब्सिडी, लोन और योजनाओं की जानकारी', en: 'Subsidy, loans & scheme information' },
+                page: 'GovtSchemes',
+                color: 'orange'
             }
         ],
         howItWorks: {
@@ -137,17 +147,31 @@ function HomeContent() {
                     {getText(content.featuresTitle)}
                 </h3>
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {content.features.map((feature, idx) => (
-                        <Card key={idx} className="border-green-200 hover:shadow-lg transition-shadow">
-                            <CardContent className="p-6 text-center">
-                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <feature.icon className="w-8 h-8 text-green-600" />
-                                </div>
-                                <h4 className="font-bold text-lg mb-2">{getText(feature.title)}</h4>
-                                <p className="text-gray-600 text-sm">{getText(feature.desc)}</p>
-                            </CardContent>
-                        </Card>
-                    ))}
+                    {content.features.map((feature, idx) => {
+                        const colorClasses = {
+                            green: 'bg-green-100 text-green-600 border-green-200 hover:border-green-400',
+                            amber: 'bg-amber-100 text-amber-600 border-amber-200 hover:border-amber-400',
+                            blue: 'bg-blue-100 text-blue-600 border-blue-200 hover:border-blue-400',
+                            orange: 'bg-orange-100 text-orange-600 border-orange-200 hover:border-orange-400'
+                        };
+                        return (
+                            <Link key={idx} to={createPageUrl(feature.page)}>
+                                <Card className={`${colorClasses[feature.color].split(' ').slice(2).join(' ')} hover:shadow-lg transition-all cursor-pointer group h-full`}>
+                                    <CardContent className="p-6 text-center">
+                                        <div className={`w-16 h-16 ${colorClasses[feature.color].split(' ').slice(0, 2).join(' ')} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
+                                            <feature.icon className="w-8 h-8" />
+                                        </div>
+                                        <h4 className="font-bold text-lg mb-2">{getText(feature.title)}</h4>
+                                        <p className="text-gray-600 text-sm mb-3">{getText(feature.desc)}</p>
+                                        <div className="flex items-center justify-center text-sm font-medium text-gray-500 group-hover:text-gray-700">
+                                            {language === 'hi' ? 'खोलें' : 'Open'}
+                                            <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        );
+                    })}
                 </div>
             </section>
 

@@ -8,13 +8,13 @@ export default function LanguageToggle() {
     
     return (
         <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => setLanguage(language === 'hi' ? 'en' : 'hi')}
-            className="flex items-center gap-2 border-green-200 hover:bg-green-50"
+            className="flex items-center gap-2 rounded-xl hover:bg-gray-100 px-4 py-2 h-10"
         >
-            <Globe className="h-4 w-4" />
-            <span className="font-semibold">{language === 'hi' ? 'English' : 'हिंदी'}</span>
+            <Globe className="h-4 w-4 text-gray-600" />
+            <span className="font-semibold text-gray-700">{language === 'hi' ? 'EN' : 'हिं'}</span>
         </Button>
     );
 }

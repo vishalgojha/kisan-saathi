@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Cloud, Sun, CloudRain, Wind, Droplets, Thermometer, Leaf, Loader2, MapPin, Search } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect, useRef } from 'react';
+import { Cloud, Sun, CloudRain, Wind, Droplets, Thermometer, Leaf, Loader2, MapPin, Search, Sprout, ArrowLeft, CloudSun, Umbrella } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
@@ -8,6 +8,8 @@ import { LanguageProvider, useLanguage } from '../components/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import gsap from 'gsap';
+import dayjs from 'dayjs';
 
 function WeatherContent() {
     const { language } = useLanguage();
@@ -15,30 +17,46 @@ function WeatherContent() {
     const [weatherData, setWeatherData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        if (weatherData) {
+            gsap.from('.weather-card', {
+                y: 30,
+                opacity: 0,
+                duration: 0.6,
+                stagger: 0.1,
+                ease: 'power3.out'
+            });
+        }
+    }, [weatherData]);
 
     const content = {
-        title: { hi: 'मौसम की जानकारी', en: 'Weather Information' },
-        subtitle: { hi: 'अपने क्षेत्र का मौसम जानें', en: 'Know your area weather' },
-        placeholder: { hi: 'अपना जिला/शहर डालें', en: 'Enter your district/city' },
-        search: { hi: 'खोजें', en: 'Search' },
+        title: { hi: 'मौसम इंटेलिजेंस', en: 'Weather Intelligence' },
+        subtitle: { hi: 'AI-संचालित मौसम पूर्वानुमान और खेती सलाह', en: 'AI-powered weather forecast & farming advice' },
+        placeholder: { hi: 'अपना जिला या शहर लिखें...', en: 'Enter your district or city...' },
+        search: { hi: 'मौसम देखें', en: 'Get Weather' },
         current: { hi: 'अभी का मौसम', en: 'Current Weather' },
-        forecast: { hi: 'आगे का मौसम', en: 'Forecast' },
-        farmingTips: { hi: 'खेती सलाह', en: 'Farming Tips' },
+        forecast: { hi: '5-दिन पूर्वानुमान', en: '5-Day Forecast' },
+        farmingTips: { hi: 'खेती सलाह', en: 'Farming Advisory' },
         irrigation: { hi: 'सिंचाई सलाह', en: 'Irrigation Advice' },
-        spray: { hi: 'छिड़काव सलाह', en: 'Spray Advice' },
+        spray: { hi: 'छिड़काव सलाह', en: 'Spray Advisory' },
         humidity: { hi: 'नमी', en: 'Humidity' },
         wind: { hi: 'हवा', en: 'Wind' },
-        rain: { hi: 'बारिश संभावना', en: 'Rain Chance' },
-        back: { hi: '← वापस', en: '← Back' }
+        rain: { hi: 'बारिश', en: 'Rain' },
+        back: { hi: 'वापस', en: 'Back' }
     };
 
     const getText = (obj) => obj?.[language] || obj?.en || '';
 
-    const getWeatherIcon = (condition) => {
+    const getWeatherIcon = (condition, size = 'large') => {
         const lowerCondition = condition?.toLowerCase() || '';
-        if (lowerCondition.includes('rain') || lowerCondition.includes('बारिश')) return <CloudRain className="w-12 h-12 text-blue-500" />;
-        if (lowerCondition.includes('cloud') || lowerCondition.includes('बादल')) return <Cloud className="w-12 h-12 text-gray-500" />;
-        return <Sun className="w-12 h-12 text-yellow-500" />;
+        const iconClass = size === 'large' ? 'w-20 h-20' : 'w-10 h-10';
+        if (lowerCondition.includes('rain') || lowerCondition.includes('बारिश')) 
+            return <CloudRain className={`${iconClass} text-blue-500`} />;
+        if (lowerCondition.includes('cloud') || lowerCondition.includes('बादल')) 
+            return <CloudSun className={`${iconClass} text-gray-500`} />;
+        return <Sun className={`${iconClass} text-amber-500`} />;
     };
 
     const fetchWeather = async () => {
@@ -57,82 +75,95 @@ function WeatherContent() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-green-50">
-            <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <Link to={createPageUrl('Home')}>
-                        <Button variant="ghost" className="text-green-700">
-                            {getText(content.back)}
-                        </Button>
-                    </Link>
-                    <h1 className="text-xl font-bold text-blue-800">{getText(content.title)}</h1>
-                    <LanguageToggle />
+        <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50">
+            {/* Header */}
+            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+                <div className="container mx-auto px-6 py-4">
+                    <div className="flex justify-between items-center">
+                        <Link to={createPageUrl('Home')}>
+                            <Button variant="ghost" className="gap-2 rounded-xl hover:bg-gray-100">
+                                <ArrowLeft className="w-4 h-4" />
+                                {getText(content.back)}
+                            </Button>
+                        </Link>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-blue-600 rounded-xl flex items-center justify-center">
+                                <CloudRain className="w-5 h-5 text-white" />
+                            </div>
+                            <h1 className="text-xl font-bold text-gray-900 hidden sm:block">{getText(content.title)}</h1>
+                        </div>
+                        <LanguageToggle />
+                    </div>
                 </div>
             </header>
 
-            <main className="container mx-auto px-4 py-8 max-w-4xl">
-                {/* Search Section */}
-                <Card className="mb-8 border-blue-200">
-                    <CardContent className="p-6">
-                        <div className="flex gap-3">
+            <main ref={containerRef} className="container mx-auto px-6 py-8 max-w-5xl">
+                {/* Hero Search */}
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+                        {getText(content.title)}
+                    </h2>
+                    <p className="text-gray-600 text-lg mb-8">{getText(content.subtitle)}</p>
+                    
+                    <div className="max-w-xl mx-auto">
+                        <div className="flex gap-3 p-2 bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100">
                             <div className="relative flex-1">
-                                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 <Input
                                     placeholder={getText(content.placeholder)}
                                     value={location}
                                     onChange={(e) => setLocation(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && fetchWeather()}
-                                    className="pl-10 h-12 text-lg"
+                                    className="pl-12 h-14 text-lg border-0 bg-transparent focus-visible:ring-0"
                                 />
                             </div>
                             <Button 
                                 onClick={fetchWeather} 
                                 disabled={loading}
-                                className="h-12 px-6 bg-blue-600 hover:bg-blue-700"
+                                className="h-14 px-8 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 rounded-xl text-lg shadow-lg shadow-blue-500/25"
                             >
                                 {loading ? <Loader2 className="animate-spin" /> : <Search className="w-5 h-5" />}
-                                <span className="ml-2">{getText(content.search)}</span>
                             </Button>
                         </div>
-                        {error && <p className="text-red-500 mt-3">{error}</p>}
-                    </CardContent>
-                </Card>
+                        {error && <p className="text-red-500 mt-4 bg-red-50 py-2 px-4 rounded-lg inline-block">{error}</p>}
+                    </div>
+                </div>
 
                 {weatherData && (
-                    <>
-                        {/* Current Weather */}
-                        <Card className="mb-6 border-blue-200 overflow-hidden">
-                            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6">
-                                <div className="flex items-center justify-between">
+                    <div className="space-y-6">
+                        {/* Current Weather Card */}
+                        <Card className="weather-card overflow-hidden border-0 shadow-xl shadow-gray-200/50">
+                            <div className="bg-gradient-to-br from-sky-500 via-blue-500 to-blue-600 text-white p-8 md:p-10">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                                     <div>
-                                        <h2 className="text-2xl font-bold mb-1">{weatherData.location}</h2>
-                                        <p className="text-blue-100">{getText(content.current)}</p>
+                                        <p className="text-sky-100 text-sm font-medium mb-1">{dayjs().format('dddd, MMMM D')}</p>
+                                        <h2 className="text-3xl md:text-4xl font-bold mb-2">{weatherData.location}</h2>
+                                        <p className="text-xl text-sky-100">
+                                            {language === 'hi' ? weatherData.current?.condition_hi : weatherData.current?.condition}
+                                        </p>
                                     </div>
-                                    {getWeatherIcon(weatherData.current?.condition)}
-                                </div>
-                                <div className="mt-4 flex items-end gap-4">
-                                    <span className="text-6xl font-light">{weatherData.current?.temperature}°C</span>
-                                    <span className="text-xl mb-2">
-                                        {language === 'hi' ? weatherData.current?.condition_hi : weatherData.current?.condition}
-                                    </span>
+                                    <div className="flex items-center gap-4">
+                                        {getWeatherIcon(weatherData.current?.condition)}
+                                        <span className="text-7xl md:text-8xl font-light">{weatherData.current?.temperature}°</span>
+                                    </div>
                                 </div>
                             </div>
-                            <CardContent className="p-4">
-                                <div className="grid grid-cols-3 gap-4 text-center">
-                                    <div className="p-3 bg-blue-50 rounded-lg">
-                                        <Droplets className="w-6 h-6 text-blue-500 mx-auto mb-1" />
-                                        <p className="text-sm text-gray-600">{getText(content.humidity)}</p>
-                                        <p className="font-bold">{weatherData.current?.humidity}%</p>
+                            <CardContent className="p-6 bg-white">
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="text-center p-4 bg-sky-50 rounded-2xl">
+                                        <Droplets className="w-7 h-7 text-sky-500 mx-auto mb-2" />
+                                        <p className="text-xs text-gray-500 mb-1">{getText(content.humidity)}</p>
+                                        <p className="text-xl font-bold text-gray-900">{weatherData.current?.humidity}%</p>
                                     </div>
-                                    <div className="p-3 bg-blue-50 rounded-lg">
-                                        <Wind className="w-6 h-6 text-blue-500 mx-auto mb-1" />
-                                        <p className="text-sm text-gray-600">{getText(content.wind)}</p>
-                                        <p className="font-bold">{weatherData.current?.wind_speed} km/h</p>
+                                    <div className="text-center p-4 bg-sky-50 rounded-2xl">
+                                        <Wind className="w-7 h-7 text-sky-500 mx-auto mb-2" />
+                                        <p className="text-xs text-gray-500 mb-1">{getText(content.wind)}</p>
+                                        <p className="text-xl font-bold text-gray-900">{weatherData.current?.wind_speed} km/h</p>
                                     </div>
-                                    <div className="p-3 bg-blue-50 rounded-lg">
-                                        <Thermometer className="w-6 h-6 text-blue-500 mx-auto mb-1" />
-                                        <p className="text-sm text-gray-600">Feels Like</p>
-                                        <p className="font-bold">{weatherData.current?.temperature}°C</p>
+                                    <div className="text-center p-4 bg-sky-50 rounded-2xl">
+                                        <Umbrella className="w-7 h-7 text-sky-500 mx-auto mb-2" />
+                                        <p className="text-xs text-gray-500 mb-1">{getText(content.rain)}</p>
+                                        <p className="text-xl font-bold text-gray-900">{weatherData.forecast?.[0]?.rain_chance || 0}%</p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -140,18 +171,25 @@ function WeatherContent() {
 
                         {/* Forecast */}
                         {weatherData.forecast && (
-                            <Card className="mb-6 border-green-200">
-                                <CardHeader>
-                                    <CardTitle className="text-green-800">{getText(content.forecast)}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                                        {weatherData.forecast.map((day, idx) => (
-                                            <div key={idx} className="text-center p-3 bg-gradient-to-b from-blue-50 to-white rounded-lg border">
-                                                <p className="font-medium text-sm">{language === 'hi' ? day.day_name_hi : day.day_name}</p>
-                                                {getWeatherIcon(day.condition)}
-                                                <p className="text-lg font-bold">{day.max_temp}°/{day.min_temp}°</p>
-                                                <p className="text-xs text-blue-600">{getText(content.rain)}: {day.rain_chance}%</p>
+                            <Card className="weather-card border-0 shadow-xl shadow-gray-200/50">
+                                <CardContent className="p-6">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-6">{getText(content.forecast)}</h3>
+                                    <div className="grid grid-cols-5 gap-3">
+                                        {weatherData.forecast.slice(0, 5).map((day, idx) => (
+                                            <div key={idx} className="text-center p-4 bg-gradient-to-b from-gray-50 to-white rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow">
+                                                <p className="font-semibold text-gray-700 text-sm mb-3">
+                                                    {language === 'hi' ? day.day_name_hi : day.day_name}
+                                                </p>
+                                                {getWeatherIcon(day.condition, 'small')}
+                                                <div className="mt-3">
+                                                    <span className="text-lg font-bold text-gray-900">{day.max_temp}°</span>
+                                                    <span className="text-gray-400 mx-1">/</span>
+                                                    <span className="text-gray-500">{day.min_temp}°</span>
+                                                </div>
+                                                <p className="text-xs text-blue-600 mt-2 bg-blue-50 py-1 px-2 rounded-full">
+                                                    <Droplets className="w-3 h-3 inline mr-1" />
+                                                    {day.rain_chance}%
+                                                </p>
                                             </div>
                                         ))}
                                     </div>
@@ -159,49 +197,49 @@ function WeatherContent() {
                             </Card>
                         )}
 
-                        {/* Farming Advisory */}
+                        {/* Advisory Cards */}
                         <div className="grid md:grid-cols-3 gap-4">
                             {weatherData.farming_advisory && (
-                                <Card className="border-green-200">
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm flex items-center gap-2 text-green-700">
-                                            <Leaf className="w-4 h-4" />
-                                            {getText(content.farmingTips)}
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-gray-700">{getText(weatherData.farming_advisory)}</p>
+                                <Card className="weather-card border-0 shadow-xl shadow-gray-200/50 bg-gradient-to-br from-emerald-50 to-green-50">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                                                <Leaf className="w-6 h-6 text-emerald-600" />
+                                            </div>
+                                            <h4 className="font-bold text-emerald-800">{getText(content.farmingTips)}</h4>
+                                        </div>
+                                        <p className="text-gray-700 leading-relaxed">{getText(weatherData.farming_advisory)}</p>
                                     </CardContent>
                                 </Card>
                             )}
                             {weatherData.irrigation_advice && (
-                                <Card className="border-blue-200">
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm flex items-center gap-2 text-blue-700">
-                                            <Droplets className="w-4 h-4" />
-                                            {getText(content.irrigation)}
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-gray-700">{getText(weatherData.irrigation_advice)}</p>
+                                <Card className="weather-card border-0 shadow-xl shadow-gray-200/50 bg-gradient-to-br from-sky-50 to-blue-50">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center">
+                                                <Droplets className="w-6 h-6 text-sky-600" />
+                                            </div>
+                                            <h4 className="font-bold text-sky-800">{getText(content.irrigation)}</h4>
+                                        </div>
+                                        <p className="text-gray-700 leading-relaxed">{getText(weatherData.irrigation_advice)}</p>
                                     </CardContent>
                                 </Card>
                             )}
                             {weatherData.spray_advice && (
-                                <Card className="border-amber-200">
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm flex items-center gap-2 text-amber-700">
-                                            <Cloud className="w-4 h-4" />
-                                            {getText(content.spray)}
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-gray-700">{getText(weatherData.spray_advice)}</p>
+                                <Card className="weather-card border-0 shadow-xl shadow-gray-200/50 bg-gradient-to-br from-amber-50 to-orange-50">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                                                <Cloud className="w-6 h-6 text-amber-600" />
+                                            </div>
+                                            <h4 className="font-bold text-amber-800">{getText(content.spray)}</h4>
+                                        </div>
+                                        <p className="text-gray-700 leading-relaxed">{getText(weatherData.spray_advice)}</p>
                                     </CardContent>
                                 </Card>
                             )}
                         </div>
-                    </>
+                    </div>
                 )}
             </main>
         </div>

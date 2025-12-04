@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sprout, Settings, Loader2, MapPin, Wheat, RefreshCw, MessageCircle } from 'lucide-react';
+import { Sprout, Settings, Loader2, MapPin, Wheat, RefreshCw, MessageCircle, Bell } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,12 +15,15 @@ import DashboardPrices from '../components/dashboard/DashboardPrices';
 import DashboardSchemes from '../components/dashboard/DashboardSchemes';
 import DashboardAdvisory from '../components/dashboard/DashboardAdvisory';
 import ProfileSetup from '../components/dashboard/ProfileSetup';
+import NotificationCenter from '../components/dashboard/NotificationCenter';
+import NotificationSettings from '../components/dashboard/NotificationSettings';
 
 function DashboardContent() {
     const { language } = useLanguage();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showSettings, setShowSettings] = useState(false);
+    const [showNotificationSettings, setShowNotificationSettings] = useState(false);
     const dashboardRef = useRef(null);
 
     const getText = (obj) => obj?.[language] || obj?.en || '';
@@ -31,12 +34,31 @@ function DashboardContent() {
         location: { hi: 'स्थान', en: 'Location' },
         crops: { hi: 'फसलें', en: 'Crops' },
         edit: { hi: 'बदलें', en: 'Edit' },
-        whatsapp: { hi: 'व्हाट्सएप पर पूछें', en: 'Ask on WhatsApp' }
+        whatsapp: { hi: 'व्हाट्सएप पर पूछें', en: 'Ask on WhatsApp' },
+        notificationSettings: { hi: 'सूचना सेटिंग्स', en: 'Notification Settings' }
     };
 
     useEffect(() => {
         loadProfile();
     }, []);
+
+    // Check for alerts when profile loads
+    useEffect(() => {
+        if (profile?.id) {
+            checkForAlerts();
+        }
+    }, [profile?.id]);
+
+    const checkForAlerts = async () => {
+        try {
+            await base44.functions.invoke('checkAlerts', {
+                profile_id: profile.id,
+                check_type: 'all'
+            });
+        } catch (err) {
+            console.error('Failed to check alerts:', err);
+        }
+    };
 
     useEffect(() => {
         if (profile && dashboardRef.current) {
@@ -98,6 +120,13 @@ function DashboardContent() {
         setProfile(prev => ({ ...prev, favorite_schemes: updated }));
     };
 
+    const saveNotificationPreferences = async (prefs) => {
+        if (!profile) return;
+        await base44.entities.FarmerProfile.update(profile.id, { notification_preferences: prefs });
+        setProfile(prev => ({ ...prev, notification_preferences: prefs }));
+        setShowNotificationSettings(false);
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
@@ -118,17 +147,29 @@ function DashboardContent() {
                             </div>
                             <h1 className="text-xl font-bold text-gray-900">{getText(content.title)}</h1>
                         </Link>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            {profile && <NotificationCenter language={language} />}
                             <LanguageToggle />
                             {profile && (
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    onClick={() => setShowSettings(true)}
-                                    className="rounded-xl"
-                                >
-                                    <Settings className="w-5 h-5" />
-                                </Button>
+                                <>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => setShowNotificationSettings(true)}
+                                        className="rounded-xl hidden md:flex"
+                                        title={getText(content.notificationSettings)}
+                                    >
+                                        <Bell className="w-5 h-5" />
+                                    </Button>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => setShowSettings(true)}
+                                        className="rounded-xl"
+                                    >
+                                        <Settings className="w-5 h-5" />
+                                    </Button>
+                                </>
                             )}
                         </div>
                     </div>
@@ -148,6 +189,26 @@ function DashboardContent() {
                                 {language === 'hi' ? 'बंद करें' : 'Cancel'}
                             </Button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Notification Settings Modal */}
+            {showNotificationSettings && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="max-w-lg w-full">
+                        <NotificationSettings 
+                            preferences={profile?.notification_preferences}
+                            onSave={saveNotificationPreferences}
+                            language={language}
+                        />
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setShowNotificationSettings(false)} 
+                            className="w-full mt-3 rounded-xl bg-white"
+                        >
+                            {language === 'hi' ? 'बंद करें' : 'Cancel'}
+                        </Button>
                     </div>
                 </div>
             )}

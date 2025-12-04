@@ -294,9 +294,9 @@ function HomeContent() {
                         <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-gray-900/10">
                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10" />
                             <img 
-                                src="https://images.unsplash.com/photo-1500937386664-56d1dfef3f32?w=1200&q=80" 
+                                src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1200&q=80" 
                                 alt="Indian Farmer" 
-                                className="w-full h-[400px] md:h-[500px] object-cover"
+                                className="w-full h-[300px] md:h-[500px] object-cover"
                             />
                             <div className="absolute bottom-6 left-6 right-6 z-20">
                                 <div className="flex gap-3 flex-wrap">

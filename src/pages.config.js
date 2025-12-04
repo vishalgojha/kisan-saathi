@@ -3,6 +3,7 @@ import Weather from './pages/Weather';
 import MandiPrices from './pages/MandiPrices';
 import CropDiagnosis from './pages/CropDiagnosis';
 import GovtSchemes from './pages/GovtSchemes';
+import Dashboard from './pages/Dashboard';
 
 
 export const PAGES = {
@@ -11,6 +12,7 @@ export const PAGES = {
     "MandiPrices": MandiPrices,
     "CropDiagnosis": CropDiagnosis,
     "GovtSchemes": GovtSchemes,
+    "Dashboard": Dashboard,
 }
 
 export const pagesConfig = {

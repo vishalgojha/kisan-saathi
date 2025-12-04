@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Sprout, TrendingUp, CloudRain, BookOpen, Phone, Camera, ArrowRight, Leaf, Sun, Droplets, MessageCircle } from 'lucide-react';
+import { Sprout, TrendingUp, CloudRain, BookOpen, Phone, Camera, ArrowRight, Leaf, Sun, Droplets, MessageCircle, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { LanguageProvider, useLanguage } from '../components/LanguageContext';
@@ -205,6 +205,12 @@ function HomeContent() {
                         </div>
                         <div className="flex items-center gap-4">
                             <LanguageToggle />
+                            <Link to={createPageUrl('Dashboard')} className="hidden md:block">
+                                <Button variant="outline" className="rounded-xl px-5 border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                                    {language === 'hi' ? 'डैशबोर्ड' : 'Dashboard'}
+                                </Button>
+                            </Link>
                             <a 
                                 href={base44.agents.getWhatsAppConnectURL('KisanMitra')} 
                                 target="_blank"

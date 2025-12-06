@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import dayjs from 'dayjs';
+import TextToSpeech from '../TextToSpeech';
 
 export default function DashboardAdvisory({ crops, state, language }) {
     const [advisories, setAdvisories] = useState([]);
@@ -94,8 +95,8 @@ export default function DashboardAdvisory({ crops, state, language }) {
                                     key={aIdx} 
                                     className={`p-3 rounded-lg border ${getActivityColor(activity.type)}`}
                                 >
-                                    <div className="flex items-start justify-between">
-                                        <div>
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="flex-1">
                                             <p className="font-medium text-sm">
                                                 {language === 'hi' ? activity.title_hi : activity.title_en}
                                             </p>
@@ -103,7 +104,10 @@ export default function DashboardAdvisory({ crops, state, language }) {
                                                 {language === 'hi' ? activity.description_hi : activity.description_en}
                                             </p>
                                         </div>
-                                        <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                                        <TextToSpeech 
+                                            text={`${language === 'hi' ? activity.title_hi : activity.title_en}. ${language === 'hi' ? activity.description_hi : activity.description_en}`}
+                                            language={language}
+                                        />
                                     </div>
                                 </div>
                             ))}

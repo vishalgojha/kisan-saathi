@@ -14,6 +14,7 @@ import DashboardWeather from '../components/dashboard/DashboardWeather';
 import DashboardPrices from '../components/dashboard/DashboardPrices';
 import DashboardSchemes from '../components/dashboard/DashboardSchemes';
 import DashboardAdvisory from '../components/dashboard/DashboardAdvisory';
+import DashboardNutrient from '../components/dashboard/DashboardNutrient';
 import ProfileSetup from '../components/dashboard/ProfileSetup';
 import NotificationCenter from '../components/dashboard/NotificationCenter';
 import NotificationSettings from '../components/dashboard/NotificationSettings';
@@ -277,6 +278,15 @@ function DashboardContent() {
                                     state={profile.state}
                                     favoriteMandis={profile.favorite_mandis}
                                     onToggleFavorite={toggleFavoriteMandi}
+                                    language={language}
+                                />
+                            </div>
+
+                            {/* Nutrient Tips */}
+                            <div className="dashboard-card">
+                                <DashboardNutrient 
+                                    crops={profile.crops}
+                                    state={profile.state}
                                     language={language}
                                 />
                             </div>

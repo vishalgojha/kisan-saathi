@@ -95,12 +95,12 @@ function HomeContent() {
 
     const content = {
         title: {
-            hi: 'किसान मित्र',
-            en: 'KisanMitra'
+            hi: 'किसान साथी',
+            en: 'Kisan Saathi'
         },
         tagline: {
-            hi: 'आपका डिजिटल खेती साथी',
-            en: 'Your Digital Farming Companion'
+            hi: 'खेती में आपका विश्वसनीय साथी',
+            en: 'Your Trusted Partner in Farming'
         },
         subtitle: {
             hi: 'AI-संचालित फसल सलाह • लाइव मंडी भाव • मौसम अलर्ट',
@@ -212,7 +212,7 @@ function HomeContent() {
                                 </Button>
                             </Link>
                             <a 
-                                href={base44.agents.getWhatsAppConnectURL('KisanMitra')} 
+                                href={base44.agents.getWhatsAppConnectURL('KisanSaathi')} 
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="hidden md:block"
@@ -268,7 +268,7 @@ function HomeContent() {
                         </p>
                         <div className="hero-cta flex flex-col sm:flex-row gap-4 justify-center">
                             <a 
-                                href={base44.agents.getWhatsAppConnectURL('KisanMitra')} 
+                                href={base44.agents.getWhatsAppConnectURL('KisanSaathi')} 
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -377,7 +377,7 @@ function HomeContent() {
 
                     <div className="text-center mt-16">
                         <a 
-                            href={base44.agents.getWhatsAppConnectURL('KisanMitra')} 
+                            href={base44.agents.getWhatsAppConnectURL('KisanSaathi')} 
                             target="_blank"
                             rel="noopener noreferrer"
                         >
@@ -400,9 +400,12 @@ function HomeContent() {
                             </div>
                             <span className="font-bold text-gray-900">{getText(content.title)}</span>
                         </div>
-                        <p className="text-gray-500 text-sm">
-                            {language === 'hi' ? '© 2024 किसान मित्र - भारतीय किसानों के लिए बनाया गया' : '© 2024 KisanMitra - Made for Indian Farmers'}
-                        </p>
+                        <div className="text-center md:text-left">
+                            <p className="text-gray-500 text-sm">
+                                {language === 'hi' ? '© 2024 किसान साथी - भारतीय किसानों के लिए बनाया गया' : '© 2024 Kisan Saathi - Made for Indian Farmers'}
+                            </p>
+                            <p className="text-gray-400 text-xs mt-1">www.kisansaath.life</p>
+                        </div>
                         <a href="tel:1800-180-1551" className="flex items-center gap-2 text-green-600 font-medium">
                             <Phone className="w-4 h-4" />
                             1800-180-1551

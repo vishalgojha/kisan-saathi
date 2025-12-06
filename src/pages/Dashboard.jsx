@@ -288,7 +288,7 @@ function DashboardContent() {
                                     <MessageCircle className="w-8 h-8 mx-auto mb-2" />
                                     <h3 className="font-bold mb-2">{getText(content.whatsapp)}</h3>
                                     <a 
-                                        href={base44.agents.getWhatsAppConnectURL('KisanMitra')} 
+                                        href={base44.agents.getWhatsAppConnectURL('KisanSaathi')} 
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >

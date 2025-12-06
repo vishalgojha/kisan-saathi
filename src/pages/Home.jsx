@@ -203,25 +203,21 @@ function HomeContent() {
                                 </h1>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <LanguageToggle />
+                            <Button 
+                                onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                                variant="outline" 
+                                className="rounded-xl px-5 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                            >
+                                {language === 'hi' ? 'लॉगिन' : 'Login'}
+                            </Button>
                             <Link to={createPageUrl('Dashboard')} className="hidden md:block">
                                 <Button variant="outline" className="rounded-xl px-5 border-emerald-200 text-emerald-700 hover:bg-emerald-50">
                                     <LayoutDashboard className="w-4 h-4 mr-2" />
                                     {language === 'hi' ? 'डैशबोर्ड' : 'Dashboard'}
                                 </Button>
                             </Link>
-                            <a 
-                                href={base44.agents.getWhatsAppConnectURL('KisanSaathi')} 
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hidden md:block"
-                            >
-                                <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/20 rounded-xl px-6">
-                                    <MessageCircle className="w-4 h-4 mr-2" />
-                                    {getText(content.whatsappBtn)}
-                                </Button>
-                            </a>
                         </div>
                     </div>
                 </div>

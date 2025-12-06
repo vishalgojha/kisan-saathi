@@ -29,6 +29,7 @@ function DiagnosisContent() {
     const [files, setFiles] = useState([]);
     const [imageUrl, setImageUrl] = useState('');
     const [previewUrl, setPreviewUrl] = useState('');
+    const [plantType, setPlantType] = useState('crop');
     const [cropName, setCropName] = useState('');
     const [symptoms, setSymptoms] = useState('');
     const [diagnosis, setDiagnosis] = useState(null);
@@ -66,10 +67,18 @@ function DiagnosisContent() {
     }, [diagnosis]);
 
     const content = {
-        title: { hi: 'AI फसल डॉक्टर', en: 'AI Crop Doctor' },
+        title: { hi: 'AI पौधा डॉक्टर', en: 'AI Plant Doctor' },
         subtitle: { hi: 'फोटो से सेकंड में बीमारी पहचानें और इलाज पाएं', en: 'Get instant diagnosis & treatment from a photo' },
-        uploadLabel: { hi: 'फसल की फोटो अपलोड करें', en: 'Upload crop photo' },
-        cropName: { hi: 'फसल का नाम', en: 'Crop Name' },
+        plantType: { hi: 'पौधे का प्रकार', en: 'Plant Type' },
+        plantTypes: {
+            crop: { hi: 'खेत की फसल', en: 'Farm Crop' },
+            home: { hi: 'घर का पौधा', en: 'Home Plant' },
+            terrace: { hi: 'छत का बगीचा', en: 'Terrace Garden' },
+            vegetable: { hi: 'सब्जी', en: 'Vegetable' },
+            fruit: { hi: 'फल', en: 'Fruit Tree' }
+        },
+        uploadLabel: { hi: 'पौधे की फोटो अपलोड करें', en: 'Upload plant photo' },
+        cropName: { hi: 'पौधे का नाम', en: 'Plant Name' },
         symptoms: { hi: 'लक्षण बताएं (वैकल्पिक)', en: 'Describe symptoms (optional)' },
         diagnose: { hi: 'AI से जांच करें', en: 'Analyze with AI' },
         analyzing: { hi: 'AI विश्लेषण जारी...', en: 'AI Analysis in progress...' },
@@ -157,6 +166,7 @@ function DiagnosisContent() {
                 base44.functions.invoke('diagnoseCropDisease', {
                     image_url: imageUrl,
                     crop_name: cropName,
+                    plant_type: plantType,
                     symptoms
                 })
             ]);
@@ -223,6 +233,28 @@ function DiagnosisContent() {
                 {/* Upload Section */}
                 <Card className="border-0 shadow-xl shadow-gray-200/50 mb-8 overflow-hidden">
                     <CardContent className="p-8">
+                        {/* Plant Type Selector */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                {getText(content.plantType)}
+                            </label>
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                                {Object.entries(content.plantTypes).map(([key, label]) => (
+                                    <button
+                                        key={key}
+                                        onClick={() => setPlantType(key)}
+                                        className={`p-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                                            plantType === key
+                                                ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                                                : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300'
+                                        }`}
+                                    >
+                                        {getText(label)}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         {/* FilePond Upload */}
                         <div className="mb-6">
                             <label className="block text-sm font-semibold text-gray-700 mb-3">

@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { image_url, crop_name, symptoms } = await req.json();
+        const { image_url, crop_name, plant_type = 'crop', symptoms } = await req.json();
         
         if (!image_url && !symptoms) {
             return Response.json({ 
@@ -17,12 +17,21 @@ Deno.serve(async (req) => {
             }, { status: 400 });
         }
 
-        const cropContext = crop_name ? `for ${crop_name} crop` : '';
+        const plantTypeText = {
+            crop: 'farm crop',
+            home: 'home/indoor plant',
+            terrace: 'terrace garden plant',
+            vegetable: 'vegetable plant',
+            fruit: 'fruit tree'
+        };
+
+        const contextType = plantTypeText[plant_type] || 'plant';
+        const cropContext = crop_name ? `for ${crop_name} (${contextType})` : `for this ${contextType}`;
         const symptomsContext = symptoms ? `Additional symptoms described: ${symptoms}` : '';
 
         // Use InvokeLLM with image analysis
         const diagnosis = await base44.integrations.Core.InvokeLLM({
-            prompt: `You are an expert agricultural scientist and plant pathologist. Analyze this crop image ${cropContext} and provide detailed diagnosis.
+            prompt: `You are an expert plant pathologist and botanist specializing in ALL types of plants including farm crops, home plants, terrace gardens, vegetables, and fruit trees. Analyze this ${contextType} image ${cropContext} and provide detailed diagnosis.
             
             ${symptomsContext}
             

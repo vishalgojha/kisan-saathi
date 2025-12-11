@@ -210,14 +210,20 @@ function HomeContent() {
                         </div>
                         <div className="flex items-center gap-3">
                             <LanguageToggle />
-                            <Link to={createPageUrl('Dashboard')}>
-                                <Button 
-                                    variant="outline" 
-                                    className="rounded-xl px-5 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                                >
-                                    {language === 'hi' ? 'लॉगिन' : 'Login'}
-                                </Button>
-                            </Link>
+                            <Button 
+                                onClick={async () => {
+                                    const isAuth = await base44.auth.isAuthenticated();
+                                    if (isAuth) {
+                                        window.location.href = createPageUrl('Dashboard');
+                                    } else {
+                                        base44.auth.redirectToLogin(window.location.origin + createPageUrl('Dashboard'));
+                                    }
+                                }}
+                                variant="outline" 
+                                className="rounded-xl px-5 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                            >
+                                {language === 'hi' ? 'लॉगिन' : 'Login'}
+                            </Button>
                             <Link to={createPageUrl('Dashboard')} className="hidden md:block">
                                 <Button variant="outline" className="rounded-xl px-5 border-emerald-200 text-emerald-700 hover:bg-emerald-50">
                                     <LayoutDashboard className="w-4 h-4 mr-2" />

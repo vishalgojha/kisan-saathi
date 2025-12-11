@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { MapPin, Wheat, Save, Loader2 } from 'lucide-react';
+import { MapPin, Wheat, Save, Loader2, ChevronsUpDown, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 export default function ProfileSetup({ onSave, language }) {
     const [location, setLocation] = useState('');
     const [state, setState] = useState('');
     const [crops, setCrops] = useState([]);
     const [saving, setSaving] = useState(false);
+    const [open, setOpen] = useState(false);
 
     const getText = (obj) => obj?.[language] || obj?.en || '';
 
@@ -24,8 +27,12 @@ export default function ProfileSetup({ onSave, language }) {
     };
 
     const states = [
-        'Madhya Pradesh', 'Maharashtra', 'Uttar Pradesh', 'Rajasthan', 
-        'Punjab', 'Haryana', 'Gujarat', 'Karnataka', 'Andhra Pradesh', 'Bihar'
+        'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+        'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 
+        'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra',
+        'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha',
+        'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana',
+        'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
     ];
 
     const availableCrops = [
@@ -73,16 +80,45 @@ export default function ProfileSetup({ onSave, language }) {
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {getText(content.state)}
                             </label>
-                            <Select value={state} onValueChange={setState}>
-                                <SelectTrigger className="h-12 rounded-xl">
-                                    <SelectValue placeholder={getText(content.state)} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {states.map(s => (
-                                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Popover open={open} onOpenChange={setOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        aria-expanded={open}
+                                        className="w-full h-12 rounded-xl justify-between"
+                                    >
+                                        {state || getText(content.state)}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0" align="start">
+                                    <Command>
+                                        <CommandInput placeholder={language === 'hi' ? 'राज्य खोजें...' : 'Search state...'} />
+                                        <CommandEmpty>{language === 'hi' ? 'कोई राज्य नहीं मिला' : 'No state found'}</CommandEmpty>
+                                        <CommandGroup className="max-h-64 overflow-auto">
+                                            {states.map((s) => (
+                                                <CommandItem
+                                                    key={s}
+                                                    value={s}
+                                                    onSelect={() => {
+                                                        setState(s);
+                                                        setOpen(false);
+                                                    }}
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            "mr-2 h-4 w-4",
+                                                            state === s ? "opacity-100" : "opacity-0"
+                                                        )}
+                                                    />
+                                                    {s}
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
                         </div>
 
                         <div>

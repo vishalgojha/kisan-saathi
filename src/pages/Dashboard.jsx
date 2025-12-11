@@ -80,6 +80,7 @@ function DashboardContent() {
             const isAuth = await base44.auth.isAuthenticated();
             if (!isAuth) {
                 setLoading(false);
+                base44.auth.redirectToLogin(window.location.href);
                 return;
             }
             const profiles = await base44.entities.FarmerProfile.list();
@@ -221,23 +222,7 @@ function DashboardContent() {
             )}
 
             <main className="container mx-auto px-4 md:px-6 py-6 md:py-8 max-w-6xl">
-                {!loading && !profile ? (
-                    <Card className="border-0 shadow-xl max-w-md mx-auto text-center p-8">
-                        <Sprout className="w-16 h-16 mx-auto mb-4 text-emerald-600" />
-                        <h2 className="text-2xl font-bold mb-3">{language === 'hi' ? 'लॉगिन करें' : 'Please Login'}</h2>
-                        <p className="text-gray-600 mb-6">
-                            {language === 'hi' 
-                                ? 'अपना डैशबोर्ड देखने के लिए कृपया लॉगिन करें' 
-                                : 'Please login to access your personalized dashboard'}
-                        </p>
-                        <Button 
-                            onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                            className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-xl w-full"
-                        >
-                            {language === 'hi' ? 'लॉगिन करें' : 'Login'}
-                        </Button>
-                    </Card>
-                ) : profile ? (
+                {profile ? (
                     <div ref={dashboardRef}>
                         {/* Profile Summary */}
                         <Card className="dashboard-card border-0 shadow-lg mb-6 overflow-hidden">

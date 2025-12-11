@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { location, state, farm_area_acres, lat, lon, crop_type } = await req.json();
+        const { location, state, farm_area_acres = 5, lat, lon, crop_type } = await req.json();
         
         if (!location || !state) {
             return Response.json({ 
@@ -27,9 +27,9 @@ Deno.serve(async (req) => {
         const weatherData = await weatherResponse.json();
 
         // Calculate solar potential using regression model
-        const avgSunHours = weatherData.daily.sunshine_duration.reduce((a, b) => a + b, 0) / weatherData.daily.sunshine_duration.length / 3600; // Convert to hours
-        const avgTemp = weatherData.daily.temperature_2m_max.reduce((a, b) => a + b, 0) / weatherData.daily.temperature_2m_max.length;
-        const avgWindSpeed = weatherData.daily.windspeed_10m_max.reduce((a, b) => a + b, 0) / weatherData.daily.windspeed_10m_max.length;
+        const avgSunHours = (weatherData.daily.sunshine_duration.reduce((a, b) => a + (b || 0), 0) / weatherData.daily.sunshine_duration.length) / 3600; // Convert to hours
+        const avgTemp = weatherData.daily.temperature_2m_max.reduce((a, b) => a + (b || 0), 0) / weatherData.daily.temperature_2m_max.length;
+        const avgWindSpeed = weatherData.daily.windspeed_10m_max.reduce((a, b) => a + (b || 0), 0) / weatherData.daily.windspeed_10m_max.length;
         
         // Simple regression model for solar (kWh = panel_efficiency * area * sun_hours * performance_ratio)
         const panelEfficiency = 0.18; // 18% efficiency
@@ -68,8 +68,8 @@ Deno.serve(async (req) => {
 
         // Generate 7-day trend
         const dailyTrends = weatherData.daily.sunshine_duration.map((sunDuration, idx) => {
-            const sunHours = sunDuration / 3600;
-            const windSpeed = weatherData.daily.windspeed_10m_max[idx];
+            const sunHours = (sunDuration || 0) / 3600;
+            const windSpeed = weatherData.daily.windspeed_10m_max[idx] || 0;
             return {
                 date: weatherData.daily.time[idx],
                 solar_kwh: parseFloat((panelAreaSqm * sunHours * panelEfficiency * performanceRatio).toFixed(2)),

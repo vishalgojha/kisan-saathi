@@ -79,6 +79,8 @@ function HomeContent() {
     }, []);
 
     useEffect(() => {
+        if (!featuresRef.current) return;
+        
         const ctx = gsap.context(() => {
             gsap.from('.feature-card', {
                 y: 50,
@@ -209,7 +211,7 @@ function HomeContent() {
                         <div className="flex items-center gap-3">
                             <LanguageToggle />
                             <Button 
-                                onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                                onClick={() => base44.auth.redirectToLogin(createPageUrl('Dashboard'))}
                                 variant="outline" 
                                 className="rounded-xl px-5 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
                             >

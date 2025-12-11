@@ -99,12 +99,12 @@ export default function ProfileSetup({ onSave, language }) {
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {getText(content.state)}
                             </label>
-                            <Popover open={open} onOpenChange={setOpen}>
+                            <Popover open={stateOpen} onOpenChange={setStateOpen}>
                                 <PopoverTrigger asChild>
                                     <Button
                                         variant="outline"
                                         role="combobox"
-                                        aria-expanded={open}
+                                        aria-expanded={stateOpen}
                                         className="w-full h-12 rounded-xl justify-between"
                                     >
                                         {state || getText(content.state)}
@@ -122,7 +122,8 @@ export default function ProfileSetup({ onSave, language }) {
                                                     value={s}
                                                     onSelect={() => {
                                                         setState(s);
-                                                        setOpen(false);
+                                                        setLocation('');
+                                                        setStateOpen(false);
                                                     }}
                                                 >
                                                     <Check
@@ -144,12 +145,46 @@ export default function ProfileSetup({ onSave, language }) {
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {getText(content.district)}
                             </label>
-                            <Input
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                                placeholder={language === 'hi' ? 'जैसे: इंदौर, भोपाल' : 'e.g., Indore, Bhopal'}
-                                className="h-12 rounded-xl"
-                            />
+                            <Popover open={districtOpen} onOpenChange={setDistrictOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        aria-expanded={districtOpen}
+                                        disabled={!state}
+                                        className="w-full h-12 rounded-xl justify-between"
+                                    >
+                                        {location || (language === 'hi' ? 'जिला चुनें' : 'Select District')}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0" align="start">
+                                    <Command>
+                                        <CommandInput placeholder={language === 'hi' ? 'जिला खोजें...' : 'Search district...'} />
+                                        <CommandEmpty>{language === 'hi' ? 'कोई जिला नहीं मिला' : 'No district found'}</CommandEmpty>
+                                        <CommandGroup className="max-h-64 overflow-auto">
+                                            {districts.map((d) => (
+                                                <CommandItem
+                                                    key={d}
+                                                    value={d}
+                                                    onSelect={() => {
+                                                        setLocation(d);
+                                                        setDistrictOpen(false);
+                                                    }}
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            "mr-2 h-4 w-4",
+                                                            location === d ? "opacity-100" : "opacity-0"
+                                                        )}
+                                                    />
+                                                    {d}
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
                         </div>
 
                         <div>

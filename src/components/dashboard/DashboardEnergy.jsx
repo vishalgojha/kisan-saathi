@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
 export default function DashboardEnergy({ location, state, language }) {
     const [predictions, setPredictions] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showTrend, setShowTrend] = useState(false);
 
     const getText = (obj) => obj?.[language] || obj?.en || '';
 
@@ -73,7 +75,10 @@ export default function DashboardEnergy({ location, state, language }) {
 
                 <div className="space-y-3">
                     {/* Solar */}
-                    <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-100">
+                    <div 
+                        className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-100 cursor-pointer hover:shadow-md transition-shadow"
+                        onClick={() => setShowTrend(!showTrend)}
+                    >
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                                 <Sun className="w-5 h-5 text-amber-600" />
@@ -85,6 +90,36 @@ export default function DashboardEnergy({ location, state, language }) {
                         </div>
                         <p className="text-xs text-amber-700 opacity-80">{getText(content.perDay)}</p>
                     </div>
+
+                    {/* 7-Day Trend Chart */}
+                    {showTrend && predictions.daily_trends && (
+                        <div className="bg-white p-4 rounded-xl border border-gray-200">
+                            <h5 className="text-xs font-semibold text-gray-700 mb-3">
+                                {language === 'hi' ? '7-दिन का रुझान' : '7-Day Trend'}
+                            </h5>
+                            <ResponsiveContainer width="100%" height={120}>
+                                <LineChart data={predictions.daily_trends}>
+                                    <XAxis 
+                                        dataKey="date" 
+                                        tick={{ fontSize: 10 }}
+                                        tickFormatter={(value) => new Date(value).getDate() + ''}
+                                    />
+                                    <YAxis tick={{ fontSize: 10 }} width={30} />
+                                    <Tooltip 
+                                        contentStyle={{ fontSize: 12 }}
+                                        formatter={(value) => `${value} kWh`}
+                                    />
+                                    <Line 
+                                        type="monotone" 
+                                        dataKey="solar_kwh" 
+                                        stroke="#f59e0b" 
+                                        strokeWidth={2}
+                                        dot={{ r: 3 }}
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    )}
 
                     {/* Wind */}
                     {predictions.wind_potential?.feasibility !== 'Not Feasible' && (

@@ -15,6 +15,7 @@ import DashboardPrices from '../components/dashboard/DashboardPrices';
 import DashboardSchemes from '../components/dashboard/DashboardSchemes';
 import DashboardAdvisory from '../components/dashboard/DashboardAdvisory';
 import DashboardNutrient from '../components/dashboard/DashboardNutrient';
+import DashboardEnergy from '../components/dashboard/DashboardEnergy';
 import ProfileSetup from '../components/dashboard/ProfileSetup';
 import NotificationCenter from '../components/dashboard/NotificationCenter';
 import NotificationSettings from '../components/dashboard/NotificationSettings';
@@ -270,7 +271,7 @@ function DashboardContent() {
                                     language={language} 
                                 />
                             </div>
-                            
+
                             {/* Prices */}
                             <div className="dashboard-card">
                                 <DashboardPrices 
@@ -278,6 +279,15 @@ function DashboardContent() {
                                     state={profile.state}
                                     favoriteMandis={profile.favorite_mandis}
                                     onToggleFavorite={toggleFavoriteMandi}
+                                    language={language}
+                                />
+                            </div>
+
+                            {/* Energy Potential */}
+                            <div className="dashboard-card">
+                                <DashboardEnergy 
+                                    location={profile.location}
+                                    state={profile.state}
                                     language={language}
                                 />
                             </div>

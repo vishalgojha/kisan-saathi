@@ -4,6 +4,7 @@ import MandiPrices from './pages/MandiPrices';
 import CropDiagnosis from './pages/CropDiagnosis';
 import GovtSchemes from './pages/GovtSchemes';
 import Dashboard from './pages/Dashboard';
+import RenewableEnergy from './pages/RenewableEnergy';
 
 
 export const PAGES = {
@@ -13,6 +14,7 @@ export const PAGES = {
     "CropDiagnosis": CropDiagnosis,
     "GovtSchemes": GovtSchemes,
     "Dashboard": Dashboard,
+    "RenewableEnergy": RenewableEnergy,
 }
 
 export const pagesConfig = {

@@ -5,6 +5,7 @@ import CropDiagnosis from './pages/CropDiagnosis';
 import GovtSchemes from './pages/GovtSchemes';
 import Dashboard from './pages/Dashboard';
 import RenewableEnergy from './pages/RenewableEnergy';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -20,4 +21,5 @@ export const PAGES = {
 export const pagesConfig = {
     mainPage: "Home",
     Pages: PAGES,
+    Layout: __Layout,
 };

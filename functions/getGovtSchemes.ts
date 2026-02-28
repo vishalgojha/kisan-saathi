@@ -1,87 +1,83 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
-
 Deno.serve(async (req) => {
-    try {
-        const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
-        
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+  try {
+    const { state, scheme_type } = await req.json();
+    const targetState = state || "All India";
+    const type = String(scheme_type || "").toLowerCase();
 
-        const { state, scheme_type, crop } = await req.json();
-        
-        const stateFilter = state ? `in ${state}` : 'across India';
-        const typeFilter = scheme_type ? `specifically for ${scheme_type}` : '';
-        const cropFilter = crop ? `related to ${crop} farming` : '';
+    const allSchemes = [
+      {
+        name_en: "PM-KISAN Income Support",
+        name_hi: "पीएम-किसान आय सहायता",
+        category: "subsidy",
+        type: "subsidy",
+        benefits_en: "Direct annual income transfer to eligible farmers.",
+        benefits_hi: "पात्र किसानों को वार्षिक प्रत्यक्ष आय हस्तांतरण।",
+        benefit_en: "Direct annual income transfer to eligible farmers.",
+        benefit_hi: "पात्र किसानों को वार्षिक प्रत्यक्ष आय हस्तांतरण।",
+        eligibility_en: ["Landholding farmer family", "Aadhaar linked bank account"],
+        eligibility_hi: ["भूमिधर किसान परिवार", "आधार लिंक बैंक खाता"],
+        subsidy_amount: "INR 6000 per year",
+        documents_required: ["Aadhaar", "Land record", "Bank passbook"],
+        how_to_apply_en: "Apply via PM-KISAN portal or nearest CSC center.",
+        how_to_apply_hi: "पीएम-किसान पोर्टल या नजदीकी CSC केंद्र से आवेदन करें।",
+        deadline: "Rolling enrollment",
+        website: "https://pmkisan.gov.in/",
+        helpline: "155261",
+      },
+      {
+        name_en: "PMFBY Crop Insurance",
+        name_hi: "प्रधानमंत्री फसल बीमा योजना",
+        category: "insurance",
+        type: "insurance",
+        benefits_en: "Insurance cover for crop losses due to natural calamities.",
+        benefits_hi: "प्राकृतिक आपदाओं से फसल हानि पर बीमा सुरक्षा।",
+        benefit_en: "Insurance cover for crop losses due to natural calamities.",
+        benefit_hi: "प्राकृतिक आपदाओं से फसल हानि पर बीमा सुरक्षा।",
+        eligibility_en: ["Sown crop in notified area", "Registered farmer"],
+        eligibility_hi: ["अधिसूचित क्षेत्र में बोई गई फसल", "पंजीकृत किसान"],
+        subsidy_amount: "Highly subsidized premium",
+        documents_required: ["Aadhaar", "Bank account", "Sowing proof"],
+        how_to_apply_en: "Apply through insurance portal, bank, or local agriculture office.",
+        how_to_apply_hi: "बीमा पोर्टल, बैंक या स्थानीय कृषि कार्यालय से आवेदन करें।",
+        deadline: "Before sowing season",
+        website: "https://pmfby.gov.in/",
+        helpline: "14447",
+      },
+      {
+        name_en: "Solar Pump Subsidy (PM KUSUM)",
+        name_hi: "सोलर पंप सब्सिडी (पीएम कुसुम)",
+        category: "equipment",
+        type: "equipment",
+        benefits_en: "Capital subsidy for solar irrigation pumps.",
+        benefits_hi: "सौर सिंचाई पंप हेतु पूंजी सब्सिडी।",
+        benefit_en: "Capital subsidy for solar irrigation pumps.",
+        benefit_hi: "सौर सिंचाई पंप हेतु पूंजी सब्सिडी।",
+        eligibility_en: ["Small/medium farmers", "Eligible feeder area"],
+        eligibility_hi: ["लघु/मध्यम किसान", "पात्र फीडर क्षेत्र"],
+        subsidy_amount: "Up to 60% (state dependent)",
+        documents_required: ["Aadhaar", "Land papers", "Electricity details"],
+        how_to_apply_en: "Apply through state renewable agency portal.",
+        how_to_apply_hi: "राज्य नवीकरणीय एजेंसी पोर्टल से आवेदन करें।",
+        deadline: "As per state notification",
+        website: "https://mnre.gov.in/",
+        helpline: "1800-180-3333",
+      },
+    ].map((scheme) => ({ ...scheme, state: targetState }));
 
-        // Use InvokeLLM with internet context to get scheme information
-        const schemes = await base44.integrations.Core.InvokeLLM({
-            prompt: `Find current government agricultural schemes and subsidies for farmers ${stateFilter} ${typeFilter} ${cropFilter}.
-            
-            Search for latest information from official government sources about:
-            - PM-KISAN and other direct benefit schemes
-            - Crop insurance schemes (PMFBY)
-            - Subsidies on seeds, fertilizers, equipment
-            - KCC (Kisan Credit Card) and agricultural loans
-            - Solar pump subsidies
-            - Drip irrigation subsidies
-            - State-specific schemes
-            
-            For each scheme provide:
-            - Scheme name
-            - Benefits
-            - Eligibility criteria
-            - How to apply
-            - Required documents
-            - Important deadlines
-            - Helpline numbers
-            
-            Provide response in both Hindi and English.`,
-            add_context_from_internet: true,
-            response_json_schema: {
-                type: "object",
-                properties: {
-                    schemes: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                name_en: { type: "string" },
-                                name_hi: { type: "string" },
-                                category: { type: "string" },
-                                benefits_en: { type: "string" },
-                                benefits_hi: { type: "string" },
-                                eligibility_en: { type: "array", items: { type: "string" } },
-                                eligibility_hi: { type: "array", items: { type: "string" } },
-                                subsidy_amount: { type: "string" },
-                                documents_required: { type: "array", items: { type: "string" } },
-                                how_to_apply_en: { type: "string" },
-                                how_to_apply_hi: { type: "string" },
-                                deadline: { type: "string" },
-                                website: { type: "string" },
-                                helpline: { type: "string" }
-                            }
-                        }
-                    },
-                    kisan_helpline: { type: "string" },
-                    important_notice: {
-                        type: "object",
-                        properties: {
-                            en: { type: "string" },
-                            hi: { type: "string" }
-                        }
-                    }
-                }
-            }
-        });
+    const schemes = type ? allSchemes.filter((scheme) => scheme.type.includes(type)) : allSchemes;
 
-        return Response.json({ 
-            success: true, 
-            data: schemes 
-        });
-
-    } catch (error) {
-        return Response.json({ error: error.message }, { status: 500 });
-    }
+    return Response.json({
+      success: true,
+      data: {
+        schemes,
+        kisan_helpline: "1800-180-1551",
+        important_notice: {
+          en: "Always verify latest eligibility and deadlines on official portals.",
+          hi: "नवीनतम पात्रता और अंतिम तिथि हमेशा आधिकारिक पोर्टल पर सत्यापित करें।",
+        },
+      },
+    });
+  } catch (error: any) {
+    return Response.json({ error: error.message || "Unexpected error" }, { status: 500 });
+  }
 });

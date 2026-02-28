@@ -1,132 +1,50 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
-
 Deno.serve(async (req) => {
-    try {
-        const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
-        
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+  try {
+    const { crop, state, month } = await req.json();
+    const cropName = crop || "Wheat";
+    const cropNameHi = cropName === "Wheat" ? "गेहूं" : cropName;
+    const monthName = month || new Date().toLocaleString("en-US", { month: "long" });
 
-        const { crop, state, month } = await req.json();
-        
-        const currentMonth = month || new Date().toLocaleString('en-US', { month: 'long' });
-        const stateContext = state ? `in ${state}` : 'in North India';
-        const cropContext = crop ? `for ${crop}` : 'for major crops';
+    const data = {
+      current_month: monthName,
+      region: state || "India",
+      crop_name_hi: cropNameHi,
+      season: "Current season",
+      activities: [
+        {
+          type: "irrigation",
+          title_en: "Irrigation planning",
+          title_hi: "सिंचाई योजना",
+          description_en: `Maintain light and timely irrigation for ${cropName}.`,
+          description_hi: `${cropNameHi} के लिए हल्की और समय पर सिंचाई करें।`,
+        },
+        {
+          type: "fertilizer",
+          title_en: "Nutrient management",
+          title_hi: "पोषक तत्व प्रबंधन",
+          description_en: "Apply split NPK doses based on crop growth stage.",
+          description_hi: "फसल की अवस्था के अनुसार NPK की विभाजित खुराक दें।",
+        },
+        {
+          type: "pest_control",
+          title_en: "Pest scouting",
+          title_hi: "कीट निगरानी",
+          description_en: "Inspect plants every 3-4 days and treat early symptoms.",
+          description_hi: "हर 3-4 दिन में निरीक्षण करें और शुरुआती लक्षणों पर उपचार करें।",
+        },
+      ],
+      market_advice: {
+        en: "Track mandi arrivals and spread sales in batches for better realization.",
+        hi: "मंडी आवक पर नजर रखें और बेहतर भाव के लिए चरणबद्ध बिक्री करें।",
+      },
+      weather_tips: {
+        en: "Monitor rain forecast to plan irrigation and spray windows.",
+        hi: "सिंचाई और छिड़काव योजना के लिए बारिश पूर्वानुमान पर नजर रखें।",
+      },
+    };
 
-        // Use InvokeLLM to get crop calendar
-        const calendar = await base44.integrations.Core.InvokeLLM({
-            prompt: `Provide agricultural calendar and activities ${cropContext} ${stateContext} for ${currentMonth} and next 2 months.
-            
-            Include:
-            1. Crops suitable for sowing this month
-            2. Current crops needing attention
-            3. Fertilizer schedule
-            4. Irrigation requirements
-            5. Common pests/diseases to watch out for
-            6. Harvesting schedule
-            7. Market timing advice
-            8. Preparation for next season
-            
-            Be specific to Indian agricultural practices and local varieties.
-            Provide response in both Hindi and English.`,
-            add_context_from_internet: true,
-            response_json_schema: {
-                type: "object",
-                properties: {
-                    current_month: { type: "string" },
-                    region: { type: "string" },
-                    season: { type: "string" },
-                    sowing_crops: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                crop_en: { type: "string" },
-                                crop_hi: { type: "string" },
-                                variety: { type: "string" },
-                                sowing_period: { type: "string" },
-                                seed_rate: { type: "string" },
-                                spacing: { type: "string" }
-                            }
-                        }
-                    },
-                    ongoing_activities: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                crop_en: { type: "string" },
-                                crop_hi: { type: "string" },
-                                activity_en: { type: "string" },
-                                activity_hi: { type: "string" },
-                                timing: { type: "string" }
-                            }
-                        }
-                    },
-                    fertilizer_schedule: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                crop: { type: "string" },
-                                fertilizer: { type: "string" },
-                                dosage: { type: "string" },
-                                application_week: { type: "string" }
-                            }
-                        }
-                    },
-                    pest_alerts: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                crop: { type: "string" },
-                                pest_en: { type: "string" },
-                                pest_hi: { type: "string" },
-                                prevention_en: { type: "string" },
-                                prevention_hi: { type: "string" }
-                            }
-                        }
-                    },
-                    harvest_schedule: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                crop_en: { type: "string" },
-                                crop_hi: { type: "string" },
-                                harvest_period: { type: "string" },
-                                tips_en: { type: "string" },
-                                tips_hi: { type: "string" }
-                            }
-                        }
-                    },
-                    market_advice: {
-                        type: "object",
-                        properties: {
-                            en: { type: "string" },
-                            hi: { type: "string" }
-                        }
-                    },
-                    weather_tips: {
-                        type: "object",
-                        properties: {
-                            en: { type: "string" },
-                            hi: { type: "string" }
-                        }
-                    }
-                }
-            }
-        });
-
-        return Response.json({ 
-            success: true, 
-            data: calendar 
-        });
-
-    } catch (error) {
-        return Response.json({ error: error.message }, { status: 500 });
-    }
+    return Response.json({ success: true, data });
+  } catch (error: any) {
+    return Response.json({ error: error.message || "Unexpected error" }, { status: 500 });
+  }
 });

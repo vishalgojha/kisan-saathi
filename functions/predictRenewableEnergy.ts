@@ -1,182 +1,92 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+const toDateKey = (date: Date) => date.toISOString().slice(0, 10);
 
 Deno.serve(async (req) => {
-    try {
-        const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
-        
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+  try {
+    const { location, state, farm_area_acres = 5 } = await req.json();
 
-        const { location, state, farm_area_acres = 5, lat, lon, crop_type } = await req.json();
-        
-        if (!location || !state) {
-            return Response.json({ 
-                error: 'Location and state are required' 
-            }, { status: 400 });
-        }
-
-        // Fetch weather data from Open-Meteo API (free, no key needed)
-        const weatherLat = lat || 28.6139; // Default to Delhi if not provided
-        const weatherLon = lon || 77.2090;
-        
-        const weatherResponse = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${weatherLat}&longitude=${weatherLon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,sunshine_duration&timezone=Asia/Kolkata&forecast_days=7`
-        );
-        const weatherData = await weatherResponse.json();
-
-        // Calculate solar potential using regression model
-        const avgSunHours = (weatherData.daily.sunshine_duration.reduce((a, b) => a + (b || 0), 0) / weatherData.daily.sunshine_duration.length) / 3600; // Convert to hours
-        const avgTemp = weatherData.daily.temperature_2m_max.reduce((a, b) => a + (b || 0), 0) / weatherData.daily.temperature_2m_max.length;
-        const avgWindSpeed = weatherData.daily.windspeed_10m_max.reduce((a, b) => a + (b || 0), 0) / weatherData.daily.windspeed_10m_max.length;
-        
-        // Simple regression model for solar (kWh = panel_efficiency * area * sun_hours * performance_ratio)
-        const panelEfficiency = 0.18; // 18% efficiency
-        const performanceRatio = 0.75; // 75% after losses
-        const recommendedCapacityKw = farm_area_acres * 0.5; // 0.5 kW per acre
-        const panelAreaSqm = recommendedCapacityKw * 5.5; // ~5.5 sqm per kW
-        
-        const dailySolarKwh = panelAreaSqm * avgSunHours * panelEfficiency * performanceRatio;
-        const monthlySolarKwh = dailySolarKwh * 30;
-        const yearlySolarKwh = dailySolarKwh * 365;
-        
-        // Wind energy regression (kWh = 0.5 * air_density * swept_area * wind_speed^3 * efficiency)
-        const airDensity = 1.225; // kg/m³
-        const turbineEfficiency = 0.35;
-        const rotorDiameter = avgWindSpeed > 4 ? 5 : 3; // meters, based on wind speed
-        const sweptArea = Math.PI * Math.pow(rotorDiameter / 2, 2);
-        
-        const dailyWindKwh = avgWindSpeed > 3 ? 
-            0.5 * airDensity * sweptArea * Math.pow(avgWindSpeed, 3) * turbineEfficiency * 24 / 1000 : 0;
-        const monthlyWindKwh = dailyWindKwh * 30;
-        const yearlyWindKwh = dailyWindKwh * 365;
-        
-        // Cost calculations (India-specific)
-        const solarCostPerKw = 50000; // ₹50,000 per kW
-        const windCostPerKw = 65000; // ₹65,000 per kW
-        const electricityRate = 7; // ₹7 per kWh average
-        
-        const solarInstallationCost = recommendedCapacityKw * solarCostPerKw;
-        const windInstallationCost = (dailyWindKwh > 0 ? 5 : 0) * windCostPerKw;
-        const monthlySavings = (dailySolarKwh + dailyWindKwh) * 30 * electricityRate;
-        const paybackYears = (solarInstallationCost + windInstallationCost) / (monthlySavings * 12);
-        
-        // Government subsidy (India - 30% subsidy up to 10kW, 20% above)
-        const subsidyPercent = recommendedCapacityKw <= 10 ? 30 : 20;
-        const govtSubsidy = solarInstallationCost * (subsidyPercent / 100);
-
-        // Generate 7-day trend
-        const dailyTrends = weatherData.daily.sunshine_duration.map((sunDuration, idx) => {
-            const sunHours = (sunDuration || 0) / 3600;
-            const windSpeed = weatherData.daily.windspeed_10m_max[idx] || 0;
-            return {
-                date: weatherData.daily.time[idx],
-                solar_kwh: parseFloat((panelAreaSqm * sunHours * panelEfficiency * performanceRatio).toFixed(2)),
-                wind_kwh: windSpeed > 3 ? parseFloat((0.5 * airDensity * sweptArea * Math.pow(windSpeed, 3) * turbineEfficiency * 24 / 1000).toFixed(2)) : 0,
-                sun_hours: parseFloat(sunHours.toFixed(1)),
-                wind_speed: parseFloat(windSpeed.toFixed(1))
-            };
-        });
-
-        // Get additional context and recommendations using LLM
-        const recommendations = await base44.integrations.Core.InvokeLLM({
-            prompt: `Provide renewable energy recommendations for ${crop_type || 'farming'} in ${location}, ${state}, India.
-            
-            Weather context:
-            - Average sun hours: ${avgSunHours.toFixed(1)} hours/day
-            - Average temperature: ${avgTemp.toFixed(1)}°C
-            - Average wind speed: ${avgWindSpeed.toFixed(1)} m/s
-            
-            Calculated predictions:
-            - Solar: ${dailySolarKwh.toFixed(1)} kWh/day
-            - Wind: ${dailyWindKwh.toFixed(1)} kWh/day
-            
-            Provide practical placement recommendations and tips for Indian farmers.
-            Include seasonal variations and government subsidy schemes available in ${state}.
-            Respond in both Hindi and English.`,
-            add_context_from_internet: true,
-            response_json_schema: {
-                type: "object",
-                properties: {
-                    seasonal_output: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                season: { type: "string" },
-                                solar_efficiency_percent: { type: "number" },
-                                wind_efficiency_percent: { type: "number" }
-                            }
-                        }
-                    },
-                    recommendations: {
-                        type: "object",
-                        properties: {
-                            solar_placement_en: { type: "string" },
-                            solar_placement_hi: { type: "string" },
-                            wind_placement_en: { type: "string" },
-                            wind_placement_hi: { type: "string" },
-                            best_option_en: { type: "string" },
-                            best_option_hi: { type: "string" },
-                            additional_tips_en: { type: "array", items: { type: "string" } },
-                            additional_tips_hi: { type: "array", items: { type: "string" } }
-                        }
-                    },
-                    subsidies: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                scheme_name_en: { type: "string" },
-                                scheme_name_hi: { type: "string" },
-                                subsidy_percent: { type: "number" },
-                                max_amount_inr: { type: "number" }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        return Response.json({ 
-            success: true, 
-            data: {
-                solar_potential: {
-                    daily_kwh: parseFloat(dailySolarKwh.toFixed(2)),
-                    monthly_kwh: parseFloat(monthlySolarKwh.toFixed(2)),
-                    yearly_kwh: parseFloat(yearlySolarKwh.toFixed(2)),
-                    peak_sun_hours: parseFloat(avgSunHours.toFixed(2)),
-                    recommended_capacity_kw: parseFloat(recommendedCapacityKw.toFixed(2)),
-                    panel_area_required_sqm: parseFloat(panelAreaSqm.toFixed(2))
-                },
-                wind_potential: {
-                    avg_wind_speed_mps: parseFloat(avgWindSpeed.toFixed(2)),
-                    feasibility: avgWindSpeed > 3 ? 'Feasible' : 'Not Feasible',
-                    daily_kwh: parseFloat(dailyWindKwh.toFixed(2)),
-                    monthly_kwh: parseFloat(monthlyWindKwh.toFixed(2)),
-                    yearly_kwh: parseFloat(yearlyWindKwh.toFixed(2)),
-                    recommended_turbine_size_kw: avgWindSpeed > 4 ? 5 : 3,
-                    height_required_meters: avgWindSpeed > 4 ? 15 : 10
-                },
-                cost_analysis: {
-                    solar_installation_cost_inr: parseFloat(solarInstallationCost.toFixed(2)),
-                    wind_installation_cost_inr: parseFloat(windInstallationCost.toFixed(2)),
-                    monthly_savings_inr: parseFloat(monthlySavings.toFixed(2)),
-                    payback_period_years: parseFloat(paybackYears.toFixed(1)),
-                    govt_subsidy_available_inr: parseFloat(govtSubsidy.toFixed(2))
-                },
-                daily_trends: dailyTrends,
-                weather_data: {
-                    avg_sun_hours: parseFloat(avgSunHours.toFixed(2)),
-                    avg_temp: parseFloat(avgTemp.toFixed(1)),
-                    avg_wind_speed: parseFloat(avgWindSpeed.toFixed(2))
-                },
-                ...recommendations
-            }
-        });
-
-    } catch (error) {
-        return Response.json({ error: error.message }, { status: 500 });
+    if (!location || !state) {
+      return Response.json({ error: "Location and state are required" }, { status: 400 });
     }
+
+    const area = Math.max(1, Number(farm_area_acres || 5));
+    const dailySolar = Number((area * 4.6).toFixed(2));
+    const dailyWind = Number((area * 1.4).toFixed(2));
+    const monthlySavings = Number(((dailySolar + dailyWind) * 30 * 7).toFixed(2));
+    const solarCost = Math.round(area * 50000);
+    const subsidy = Math.round(solarCost * 0.3);
+    const paybackYears = Number(((solarCost - subsidy) / (monthlySavings * 12)).toFixed(1));
+
+    const dailyTrends = Array.from({ length: 7 }).map((_, idx) => {
+      const date = new Date();
+      date.setDate(date.getDate() + idx);
+      const multiplier = 0.9 + ((idx % 4) * 0.05);
+      return {
+        date: toDateKey(date),
+        solar_kwh: Number((dailySolar * multiplier).toFixed(2)),
+        wind_kwh: Number((dailyWind * (1 + (idx % 3) * 0.08)).toFixed(2)),
+        sun_hours: Number((5.1 + (idx % 4) * 0.2).toFixed(1)),
+        wind_speed: Number((3.8 + (idx % 3) * 0.3).toFixed(1)),
+      };
+    });
+
+    const data = {
+      solar_potential: {
+        daily_kwh: dailySolar,
+        monthly_kwh: Number((dailySolar * 30).toFixed(2)),
+        yearly_kwh: Number((dailySolar * 365).toFixed(2)),
+        peak_sun_hours: 5.6,
+        recommended_capacity_kw: Number((area * 0.5).toFixed(2)),
+        panel_area_required_sqm: Number((area * 2.6).toFixed(2)),
+      },
+      wind_potential: {
+        avg_wind_speed_mps: 4.2,
+        feasibility: "Feasible",
+        daily_kwh: dailyWind,
+        monthly_kwh: Number((dailyWind * 30).toFixed(2)),
+        yearly_kwh: Number((dailyWind * 365).toFixed(2)),
+        recommended_turbine_size_kw: 3,
+        height_required_meters: 12,
+      },
+      cost_analysis: {
+        solar_installation_cost_inr: solarCost,
+        wind_installation_cost_inr: Math.round(area * 30000),
+        monthly_savings_inr: monthlySavings,
+        payback_period_years: paybackYears,
+        govt_subsidy_available_inr: subsidy,
+      },
+      daily_trends: dailyTrends,
+      weather_data: {
+        avg_sun_hours: 5.6,
+        avg_temp: 31.2,
+        avg_wind_speed: 4.2,
+      },
+      seasonal_output: [
+        { season: "Summer", solar_efficiency_percent: 92, wind_efficiency_percent: 78 },
+        { season: "Monsoon", solar_efficiency_percent: 74, wind_efficiency_percent: 88 },
+        { season: "Winter", solar_efficiency_percent: 85, wind_efficiency_percent: 72 },
+      ],
+      recommendations: {
+        solar_placement_en: `Install panels facing south with 20-25 degree tilt for ${location}, ${state}.`,
+        solar_placement_hi: `${location}, ${state} में पैनल दक्षिण दिशा में 20-25 डिग्री झुकाव के साथ लगाएं।`,
+        wind_placement_en: "Place turbines on open boundaries away from trees and shade.",
+        wind_placement_hi: "टर्बाइन खुले खेत किनारों पर पेड़ों और छाया से दूर लगाएं।",
+        best_option_en: "Hybrid solar + efficient pump combination gives best returns.",
+        best_option_hi: "सोलर + कुशल पंप का संयोजन बेहतर रिटर्न देता है।",
+        additional_tips_en: ["Clean solar panels every 10-15 days.", "Use net metering if available."],
+        additional_tips_hi: ["हर 10-15 दिन में पैनल साफ करें।", "उपलब्ध हो तो नेट मीटरिंग अपनाएं।"],
+      },
+      subsidies: [
+        {
+          scheme_name_en: "PM KUSUM Component-B",
+          scheme_name_hi: "पीएम कुसुम कंपोनेंट-बी",
+          subsidy_percent: 30,
+          max_amount_inr: 300000,
+        },
+      ],
+    };
+
+    return Response.json({ success: true, data });
+  } catch (error: any) {
+    return Response.json({ error: error.message || "Unexpected error" }, { status: 500 });
+  }
 });

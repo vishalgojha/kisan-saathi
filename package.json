@@ -10,6 +10,7 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./tsconfig.json",
     "preview": "vite preview",
+    "validate:env": "node scripts/validate-env.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {

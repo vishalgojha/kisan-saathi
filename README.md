@@ -41,7 +41,7 @@ npm install
 
 ### Environment Variables
 
-Create a `.env` file in the project root:
+Copy `env.example` to `.env` and update values:
 
 ```env
 VITE_APP_ID=your_app_id
@@ -49,7 +49,14 @@ VITE_API_BASE_URL=http://localhost:3000
 VITE_WHATSAPP_NUMBER=919876543210
 VITE_UPLOAD_ENDPOINT=
 VITE_DATA_MODE=mock
+VITE_ALLOW_MOCK_FALLBACK=true
 ```
+
+Runtime behavior:
+- `VITE_DATA_MODE=mock`: always use mock adapters.
+- `VITE_DATA_MODE=live`: use live adapters.
+- In production, default mode is `live` if not specified.
+- In production live mode, set `VITE_ALLOW_MOCK_FALLBACK=false` to fail fast.
 
 ### Run Locally
 
@@ -64,6 +71,7 @@ Open: `http://localhost:5173`
 ```bash
 npm run typecheck
 npm run build
+npm run validate:env
 ```
 
 ### E2E Gate
@@ -110,7 +118,22 @@ Before opening a PR, run:
 ```bash
 npm run typecheck
 npm run build
+npm run test:e2e
 ```
+
+## Production Readiness
+
+Minimum launch checks:
+1. Set production env:
+   - `VITE_DATA_MODE=live`
+   - `VITE_ALLOW_MOCK_FALLBACK=false`
+   - Valid `VITE_API_BASE_URL`
+2. Run:
+   - `npm run validate:env`
+   - `npm run typecheck`
+   - `npm run build`
+   - `npm run test:e2e`
+3. Confirm CI (`.github/workflows/ci.yml`) is green on `main`.
 
 ## License
 

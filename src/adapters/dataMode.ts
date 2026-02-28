@@ -1,3 +1,5 @@
+import { runtimeConfig } from '@/config/runtime';
+
 export type DataMode = 'mock' | 'live';
 
 const DATA_MODE_STORAGE_KEY = 'kisan_saathi_data_mode';
@@ -20,7 +22,6 @@ const readStorageDataMode = (): string => {
 };
 
 export const getDataMode = (): DataMode => {
-    const envMode = String(import.meta.env.VITE_DATA_MODE || '');
-    if (envMode) return normalizeDataMode(envMode);
+    if (runtimeConfig.dataMode) return runtimeConfig.dataMode;
     return normalizeDataMode(readStorageDataMode());
 };

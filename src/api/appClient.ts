@@ -1,9 +1,10 @@
 import { runMockFunction, runMockInvokeLLM } from "@/api/mockFunctions";
+import { runtimeConfig } from "@/config/runtime";
 
 type AnyRecord = Record<string, any>;
 
-const API_BASE_URL = String(import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
-const WHATSAPP_NUMBER = String(import.meta.env.VITE_WHATSAPP_NUMBER || "919876543210");
+const API_BASE_URL = runtimeConfig.apiBaseUrl;
+const WHATSAPP_NUMBER = runtimeConfig.whatsappNumber || "919876543210";
 const STORAGE_PREFIX = "kisan_saathi_entity_";
 const AUTH_USER_KEY = "kisan_saathi_auth_user";
 const AUTH_FLAG_KEY = "kisan_saathi_is_authenticated";
@@ -216,6 +217,12 @@ const functions = {
       }
     }
 
+    if (!runtimeConfig.allowMockFallback) {
+      const err: AnyRecord = new Error(`Function '${name}' is unavailable and mock fallback is disabled.`);
+      err.status = 503;
+      throw err;
+    }
+
     // Fallback keeps the app usable in low-connectivity areas and local demos.
     const mocked = (await runMockFunction(name, payload)) as AnyRecord;
     if (name === "checkAlerts" && Array.isArray(mocked.notifications) && mocked.notifications.length > 0) {
@@ -249,6 +256,12 @@ const integrations = {
         }
       }
 
+      if (!runtimeConfig.allowMockFallback) {
+        const err: AnyRecord = new Error("LLM endpoint unavailable and mock fallback is disabled.");
+        err.status = 503;
+        throw err;
+      }
+
       return runMockInvokeLLM(payload);
     },
     async UploadFile({ file }: { file: File }) {
@@ -256,7 +269,7 @@ const integrations = {
         throw new Error("File is required");
       }
 
-      const uploadEndpoint = String(import.meta.env.VITE_UPLOAD_ENDPOINT || "");
+      const uploadEndpoint = runtimeConfig.uploadEndpoint;
       if (uploadEndpoint) {
         const formData = new FormData();
         formData.append("file", file);
@@ -265,6 +278,11 @@ const integrations = {
         if (payload?.file_url) return payload;
       }
 
+      if (!runtimeConfig.allowMockFallback) {
+        const err: AnyRecord = new Error("Upload endpoint unavailable and mock fallback is disabled.");
+        err.status = 503;
+        throw err;
+      }
       const fileUrl = await fileToDataUrl(file);
       return { file_url: fileUrl };
     },

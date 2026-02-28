@@ -46,6 +46,7 @@ function buildForecast(days: number, seed: number) {
   const forecast = [];
 
   for (let i = 0; i < safeDays; i += 1) {
+    // Seeded generation gives stable mock output for the same location/day inputs.
     const date = new Date();
     date.setDate(date.getDate() + i);
     const drift = ((seed + i * 7) % 9) - 4;

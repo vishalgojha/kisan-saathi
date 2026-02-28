@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, X, CloudRain, TrendingUp, TrendingDown, BookOpen, Check, CheckCheck, Trash2, AlertTriangle, Info, AlertCircle } from 'lucide-react';
+import { Bell, X, CloudRain, TrendingUp, BookOpen, CheckCheck, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { appClient } from '@/api/appClient';
@@ -14,7 +13,6 @@ dayjs.extend(relativeTime);
 export default function NotificationCenter({ language }) {
     const [notifications, setNotifications] = useState([]);
     const [open, setOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
 
     const getText = (obj) => obj?.[language] || obj?.en || '';
 

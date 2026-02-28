@@ -205,6 +205,7 @@ const auth = {
 
 const functions = {
   async invoke(name: string, payload: AnyRecord = {}) {
+    // Try real backend endpoints first so farmers get live weather/market/scheme data when available.
     const endpoints = functionEndpoints(name);
     for (const endpoint of endpoints) {
       try {
@@ -215,8 +216,10 @@ const functions = {
       }
     }
 
+    // Fallback keeps the app usable in low-connectivity areas and local demos.
     const mocked = (await runMockFunction(name, payload)) as AnyRecord;
     if (name === "checkAlerts" && Array.isArray(mocked.notifications) && mocked.notifications.length > 0) {
+      // Persist generated alerts so users can read them later from Notification Center.
       await entities.FarmerNotification.bulkCreate(mocked.notifications);
     }
     return normalizeFunctionResponse(mocked);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Cloud, Sun, CloudRain, Wind, Droplets, Thermometer, Leaf, Loader2, MapPin, Search, Sprout, ArrowLeft, CloudSun, Umbrella } from 'lucide-react';
+import { Cloud, Sun, CloudRain, Wind, Droplets, Leaf, Loader2, MapPin, Search, ArrowLeft, CloudSun, Umbrella } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,7 +67,7 @@ function WeatherContent() {
         try {
             const response = await appClient.functions.invoke('getWeather', { location, days: 5 });
             setWeatherData(response.data.data);
-        } catch (err) {
+        } catch {
             setError(language === 'hi' ? 'मौसम जानकारी नहीं मिली' : 'Could not fetch weather data');
         } finally {
             setLoading(false);

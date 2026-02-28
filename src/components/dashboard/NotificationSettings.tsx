@@ -4,7 +4,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
 
 export default function NotificationSettings({ preferences, onSave, language }) {
     const [settings, setSettings] = useState(preferences || {

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Leaf, Calendar, Loader2, ChevronRight } from 'lucide-react';
+import { Leaf, Calendar, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { appClient } from '@/api/appClient';
 import dayjs from 'dayjs';
 import TextToSpeech from '../TextToSpeech';

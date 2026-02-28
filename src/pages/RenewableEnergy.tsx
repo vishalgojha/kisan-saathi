@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Wind, Zap, TrendingUp, TrendingDown, IndianRupee, ArrowLeft, Loader2, Leaf, Battery, Home } from 'lucide-react';
+import { Sun, Wind, Zap, IndianRupee, ArrowLeft, Loader2, Leaf } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { LanguageProvider, useLanguage } from '../components/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 function EnergyContent() {
     const { language } = useLanguage();

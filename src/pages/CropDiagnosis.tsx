@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Loader2, AlertTriangle, Leaf, Shield, Pill, Bug, ArrowLeft, CheckCircle2, Clock, Microscope, Pencil, Sparkles, X } from 'lucide-react';
+import { Loader2, AlertTriangle, Leaf, Shield, Pill, Bug, ArrowLeft, CheckCircle2, Clock, Microscope, Pencil, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -111,7 +111,7 @@ function DiagnosisContent() {
         try {
             const result = await appClient.integrations.Core.UploadFile({ file });
             setImageUrl(result.file_url);
-        } catch (err) {
+        } catch {
             setError(language === 'hi' ? 'फोटो अपलोड नहीं हो पाई' : 'Could not upload photo');
         }
     };
@@ -123,7 +123,7 @@ function DiagnosisContent() {
         try {
             const result = await appClient.integrations.Core.UploadFile({ file });
             setImageUrl(result.file_url);
-        } catch (err) {
+        } catch {
             setError(language === 'hi' ? 'एनोटेटेड फोटो अपलोड नहीं हो पाई' : 'Could not upload annotated photo');
         }
     };
@@ -171,7 +171,7 @@ function DiagnosisContent() {
                 })
             ]);
             setDiagnosis(response.data.data);
-        } catch (err) {
+        } catch {
             setError(language === 'hi' ? 'जांच नहीं हो पाई' : 'Could not diagnose');
         } finally {
             setLoading(false);

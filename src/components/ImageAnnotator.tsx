@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Circle, Square, Pencil, Undo2, Trash2, ZoomIn, ZoomOut, Move, MousePointer } from 'lucide-react';
+import { Circle, Square, Pencil, Undo2, Trash2, ZoomIn, ZoomOut, Move } from 'lucide-react';
 
 export default function ImageAnnotator({ imageUrl, onSave, onCancel }) {
     const canvasRef = useRef(null);

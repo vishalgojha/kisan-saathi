@@ -16,7 +16,6 @@ function HomeContent() {
     const { language } = useLanguage();
     const heroRef = useRef(null);
     const featuresRef = useRef(null);
-    const statsRef = useRef(null);
 
     useEffect(() => {
         const ctx = gsap.context(() => {

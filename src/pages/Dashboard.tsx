@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sprout, Settings, Loader2, MapPin, Wheat, RefreshCw, MessageCircle, Bell } from 'lucide-react';
+import { Sprout, Settings, Loader2, MapPin, Wheat, MessageCircle, Bell } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

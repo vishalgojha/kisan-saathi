@@ -74,6 +74,11 @@ Add screenshots to `docs/screenshots/` and update these links if filenames diffe
 ![Crop Diagnosis](docs/screenshots/crop-diagnosis.svg)
 ![Weather and Prices](docs/screenshots/weather-prices.svg)
 
+## Farmer Guides
+
+- [Farmer Guide (English)](docs/farmer-guide.en.md)
+- [किसान गाइड (Hindi)](docs/farmer-guide.hi.md)
+
 ## Contributing
 
 Contributions are welcome.
@@ -82,6 +87,8 @@ Contributions are welcome.
 2. Create a feature branch: `git checkout -b feature/your-change`.
 3. Commit your changes: `git commit -m "Describe your change"`.
 4. Push your branch and open a Pull Request.
+
+Detailed guide: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 Before opening a PR, run:
 

@@ -75,7 +75,7 @@ function SchemesContent() {
                 scheme_type: schemeType
             });
             setSchemesData(response.data.data);
-        } catch (err) {
+        } catch {
             setError(language === 'hi' ? 'योजनाएं नहीं मिलीं' : 'Could not fetch schemes');
         } finally {
             setLoading(false);

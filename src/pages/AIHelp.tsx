@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Search, BookOpen, Sprout, TrendingUp, CloudRain, HelpCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 
 export default function AIHelp() {
     const [searchQuery, setSearchQuery] = useState('');

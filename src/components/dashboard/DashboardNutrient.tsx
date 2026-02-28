@@ -4,8 +4,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { appClient } from '@/api/appClient';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 
 export default function DashboardNutrient({ crops, state, language }) {
     const [nutrientData, setNutrientData] = useState(null);

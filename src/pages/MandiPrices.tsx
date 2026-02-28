@@ -91,7 +91,7 @@ function MandiContent() {
         try {
             const response = await appClient.functions.invoke('getMandiPrices', { crop, state, district });
             setPriceData(response.data.data);
-        } catch (err) {
+        } catch {
             setError(language === 'hi' ? 'भाव जानकारी नहीं मिली' : 'Could not fetch price data');
         } finally {
             setLoading(false);

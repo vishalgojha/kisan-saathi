@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { MapPin, Wheat, Save, Loader2, ChevronsUpDown, Check } from 'lucide-react';
+import { MapPin, Save, Loader2, ChevronsUpDown, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';

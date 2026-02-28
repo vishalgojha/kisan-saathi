@@ -11,7 +11,7 @@ import { createPageUrl } from '@/utils';
 import gsap from 'gsap';
 
 import WeatherForecast from '../components/WeatherForecast';
-import DashboardSchemes from '../components/dashboard/DashboardSchemes';
+import GovtSchemes from '../components/GovtSchemes';
 import DashboardAdvisory from '../components/dashboard/DashboardAdvisory';
 import DashboardNutrient from '../components/dashboard/DashboardNutrient';
 import DashboardEnergy from '../components/dashboard/DashboardEnergy';
@@ -107,16 +107,6 @@ function DashboardContent() {
         } catch (err) {
             console.error(err);
         }
-    };
-
-    const toggleFavoriteScheme = async (scheme) => {
-        if (!profile) return;
-        const favorites = profile.favorite_schemes || [];
-        const updated = favorites.includes(scheme) 
-            ? favorites.filter(s => s !== scheme)
-            : [...favorites, scheme];
-        await appClient.entities.FarmerProfile.update(profile.id, { favorite_schemes: updated });
-        setProfile(prev => ({ ...prev, favorite_schemes: updated }));
     };
 
     const saveNotificationPreferences = async (prefs) => {
@@ -272,13 +262,10 @@ function DashboardContent() {
                             </div>
 
                             {/* Schemes */}
-                            <div className="dashboard-card">
-                                <DashboardSchemes 
-                                    state={profile.state}
+                            <div className="dashboard-card md:col-span-2 lg:col-span-2">
+                                <GovtSchemes
+                                    defaultState={profile.state}
                                     crops={profile.crops}
-                                    favoriteSchemes={profile.favorite_schemes}
-                                    onToggleFavorite={toggleFavoriteScheme}
-                                    language={language}
                                 />
                             </div>
 

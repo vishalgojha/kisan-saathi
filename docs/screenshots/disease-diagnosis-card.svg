@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="canvas" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eefcf5"/>
+      <stop offset="100%" stop-color="#edf7ff"/>
+    </linearGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0f9f74"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#canvas)"/>
+  <rect x="40" y="32" width="1200" height="656" rx="18" fill="#ffffff" stroke="#cadfd9"/>
+
+  <rect x="74" y="72" width="1132" height="86" rx="14" fill="url(#head)"/>
+  <text x="106" y="124" fill="#ffffff" font-family="Arial, sans-serif" font-size="33" font-weight="700">Disease Diagnosis Dashboard Card</text>
+
+  <rect x="74" y="184" width="1132" height="468" rx="14" fill="#f8fbfa" stroke="#d5e7e0"/>
+
+  <rect x="104" y="214" width="542" height="74" rx="12" fill="#ffffff" stroke="#d8e4de"/>
+  <text x="128" y="259" fill="#2e4b43" font-family="Arial, sans-serif" font-size="23" font-weight="600">Symptoms: brown spots + leaf curl</text>
+
+  <rect x="666" y="214" width="510" height="220" rx="12" fill="#ffffff" stroke="#d8e4de"/>
+  <rect x="696" y="244" width="450" height="140" rx="10" fill="#ddeee7"/>
+  <text x="734" y="323" fill="#3d6459" font-family="Arial, sans-serif" font-size="24">Uploaded crop image preview</text>
+
+  <rect x="104" y="312" width="542" height="122" rx="16" fill="#0f9f74"/>
+  <text x="134" y="366" fill="#ffffff" font-family="Arial, sans-serif" font-size="30" font-weight="700">Diagnosis: Leaf Spot Fungal Infection</text>
+  <text x="134" y="404" fill="#dff7ee" font-family="Arial, sans-serif" font-size="21">Confidence: 92%</text>
+
+  <rect x="104" y="452" width="532" height="172" rx="12" fill="#ffffff" stroke="#d8e4de"/>
+  <text x="128" y="490" fill="#2e4b43" font-family="Arial, sans-serif" font-size="24" font-weight="700">Treatment Suggestions</text>
+  <text x="128" y="530" fill="#4f6a61" font-family="Arial, sans-serif" font-size="20">- Organic: Neem oil + Trichoderma spray</text>
+  <text x="128" y="565" fill="#4f6a61" font-family="Arial, sans-serif" font-size="20">- Chemical: Label-dose fungicide rotation</text>
+  <text x="128" y="600" fill="#4f6a61" font-family="Arial, sans-serif" font-size="20">- Follow-up: Ask AI chat and open crop diagnosis page</text>
+
+  <rect x="658" y="452" width="518" height="172" rx="12" fill="#ffffff" stroke="#d8e4de"/>
+  <text x="682" y="490" fill="#2e4b43" font-family="Arial, sans-serif" font-size="24" font-weight="700">Useful Links</text>
+  <rect x="684" y="514" width="468" height="34" rx="17" fill="#ecfdf5" stroke="#b8e4cf"/>
+  <text x="704" y="537" fill="#22694f" font-family="Arial, sans-serif" font-size="18">Ask in AI Chat</text>
+  <rect x="684" y="556" width="468" height="34" rx="17" fill="#ecfdf5" stroke="#b8e4cf"/>
+  <text x="704" y="579" fill="#22694f" font-family="Arial, sans-serif" font-size="18">Dashboard Diagnosis Card</text>
+  <rect x="684" y="598" width="468" height="34" rx="17" fill="#ecfdf5" stroke="#b8e4cf"/>
+  <text x="704" y="621" fill="#22694f" font-family="Arial, sans-serif" font-size="18">Detailed Photo Diagnosis Page</text>
+</svg>

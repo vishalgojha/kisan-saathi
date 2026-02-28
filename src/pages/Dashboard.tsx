@@ -291,7 +291,7 @@ function DashboardContent() {
                             </div>
 
                             {/* Disease Diagnosis */}
-                            <div className="dashboard-card md:col-span-2 lg:col-span-2">
+                            <div id="disease-diagnosis" className="dashboard-card md:col-span-2 lg:col-span-2 scroll-mt-24">
                                 <DiseaseDiagnosis crops={profile.crops} />
                             </div>
 

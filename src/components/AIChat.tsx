@@ -13,7 +13,7 @@ type LocalizedText = {
 };
 
 type ChatLink = {
-  page: string;
+  to: string;
   label: LocalizedText;
 };
 
@@ -39,12 +39,12 @@ const responseTemplates: ResponseTemplate[] = [
     },
     links: [
       {
-        page: 'CropDiagnosis',
-        label: { hi: 'फसल निदान खोलें', en: 'Open Crop Diagnosis' },
+        to: `${createPageUrl('Dashboard')}#disease-diagnosis`,
+        label: { hi: 'डैशबोर्ड रोग जांच कार्ड', en: 'Open Dashboard Diagnosis Card' },
       },
       {
-        page: 'Dashboard',
-        label: { hi: 'डैशबोर्ड सलाह देखें', en: 'View Dashboard Advisory' },
+        to: createPageUrl('CropDiagnosis'),
+        label: { hi: 'विस्तृत फसल निदान खोलें', en: 'Open Detailed Crop Diagnosis' },
       },
     ],
   },
@@ -56,11 +56,11 @@ const responseTemplates: ResponseTemplate[] = [
     },
     links: [
       {
-        page: 'MandiPrices',
+        to: createPageUrl('MandiPrices'),
         label: { hi: 'मंडी भाव देखें', en: 'Check Mandi Prices' },
       },
       {
-        page: 'Dashboard',
+        to: createPageUrl('Dashboard'),
         label: { hi: 'डैशबोर्ड पर जाएं', en: 'Go to Dashboard' },
       },
     ],
@@ -73,11 +73,11 @@ const responseTemplates: ResponseTemplate[] = [
     },
     links: [
       {
-        page: 'Weather',
+        to: createPageUrl('Weather'),
         label: { hi: 'मौसम पूर्वानुमान खोलें', en: 'Open Weather Forecast' },
       },
       {
-        page: 'Dashboard',
+        to: createPageUrl('Dashboard'),
         label: { hi: 'मौसम कार्ड देखें', en: 'Open Dashboard Weather' },
       },
     ],
@@ -90,11 +90,11 @@ const responseTemplates: ResponseTemplate[] = [
     },
     links: [
       {
-        page: 'GovtSchemes',
+        to: createPageUrl('GovtSchemes'),
         label: { hi: 'सरकारी योजनाएं खोलें', en: 'Open Govt Schemes' },
       },
       {
-        page: 'Dashboard',
+        to: createPageUrl('Dashboard'),
         label: { hi: 'डैशबोर्ड योजनाएं देखें', en: 'View Dashboard Schemes' },
       },
     ],
@@ -107,11 +107,11 @@ const responseTemplates: ResponseTemplate[] = [
     },
     links: [
       {
-        page: 'Dashboard',
+        to: createPageUrl('Dashboard'),
         label: { hi: 'फसल सिफारिश कार्ड देखें', en: 'View Crop Recommendation' },
       },
       {
-        page: 'Weather',
+        to: createPageUrl('Weather'),
         label: { hi: 'मौसम से मिलान करें', en: 'Match with Weather' },
       },
     ],
@@ -176,15 +176,15 @@ const buildAssistantReply = (input: string, language: 'hi' | 'en') => {
     text: getText(fallbackResponse, language),
     links: [
       {
-        page: 'CropDiagnosis',
+        to: `${createPageUrl('Dashboard')}#disease-diagnosis`,
         label: { hi: 'रोग जांच', en: 'Disease Check' },
       },
       {
-        page: 'MandiPrices',
+        to: createPageUrl('MandiPrices'),
         label: { hi: 'मंडी भाव', en: 'Market Prices' },
       },
       {
-        page: 'Weather',
+        to: createPageUrl('Weather'),
         label: { hi: 'मौसम', en: 'Weather' },
       },
     ],
@@ -294,7 +294,7 @@ export default function AIChat() {
                     {message.links.map((link, index) => (
                       <Link
                         key={`${message.id}-link-${index}`}
-                        to={createPageUrl(link.page)}
+                        to={link.to}
                         className="text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-full px-3 py-1 transition-colors"
                       >
                         {getText(link.label, language)}

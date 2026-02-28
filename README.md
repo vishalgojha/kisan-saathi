@@ -74,6 +74,7 @@ Add screenshots to `docs/screenshots/` and update these links if filenames diffe
 ![AI Advisory Chat](docs/screenshots/ai-chat.svg)
 ![Crop Diagnosis](docs/screenshots/crop-diagnosis.svg)
 ![Disease Diagnosis](docs/screenshots/disease-diagnosis.svg)
+![Disease Diagnosis Card](docs/screenshots/disease-diagnosis-card.svg)
 ![Market Prices](docs/screenshots/market-prices.svg)
 ![Weather Forecast](docs/screenshots/weather-forecast.svg)
 ![Govt Schemes Finder](docs/screenshots/govt-schemes-finder.svg)

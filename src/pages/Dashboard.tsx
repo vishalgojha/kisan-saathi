@@ -11,7 +11,6 @@ import { createPageUrl } from '@/utils';
 import gsap from 'gsap';
 
 import DashboardWeather from '../components/dashboard/DashboardWeather';
-import DashboardPrices from '../components/dashboard/DashboardPrices';
 import DashboardSchemes from '../components/dashboard/DashboardSchemes';
 import DashboardAdvisory from '../components/dashboard/DashboardAdvisory';
 import DashboardNutrient from '../components/dashboard/DashboardNutrient';
@@ -20,6 +19,7 @@ import ProfileSetup from '../components/dashboard/ProfileSetup';
 import NotificationCenter from '../components/dashboard/NotificationCenter';
 import NotificationSettings from '../components/dashboard/NotificationSettings';
 import DiseaseDiagnosis from '../components/DiseaseDiagnosis';
+import MarketPrices from '../components/MarketPrices';
 
 function DashboardContent() {
     const { language } = useLanguage();
@@ -107,16 +107,6 @@ function DashboardContent() {
         } catch (err) {
             console.error(err);
         }
-    };
-
-    const toggleFavoriteMandi = async (mandi) => {
-        if (!profile) return;
-        const favorites = profile.favorite_mandis || [];
-        const updated = favorites.includes(mandi) 
-            ? favorites.filter(m => m !== mandi)
-            : [...favorites, mandi];
-        await appClient.entities.FarmerProfile.update(profile.id, { favorite_mandis: updated });
-        setProfile(prev => ({ ...prev, favorite_mandis: updated }));
     };
 
     const toggleFavoriteScheme = async (scheme) => {
@@ -258,14 +248,11 @@ function DashboardContent() {
                                 />
                             </div>
 
-                            {/* Prices */}
-                            <div className="dashboard-card">
-                                <DashboardPrices 
+                            {/* Market Prices */}
+                            <div className="dashboard-card md:col-span-2 lg:col-span-2">
+                                <MarketPrices
                                     crops={profile.crops}
-                                    state={profile.state}
-                                    favoriteMandis={profile.favorite_mandis}
-                                    onToggleFavorite={toggleFavoriteMandi}
-                                    language={language}
+                                    defaultState={profile.state}
                                 />
                             </div>
 

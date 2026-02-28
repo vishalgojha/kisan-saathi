@@ -73,6 +73,7 @@ Add screenshots to `docs/screenshots/` and update these links if filenames diffe
 ![Dashboard](docs/screenshots/dashboard.svg)
 ![Crop Diagnosis](docs/screenshots/crop-diagnosis.svg)
 ![Disease Diagnosis](docs/screenshots/disease-diagnosis.svg)
+![Market Prices](docs/screenshots/market-prices.svg)
 ![Weather and Prices](docs/screenshots/weather-prices.svg)
 
 ## Farmer Guides

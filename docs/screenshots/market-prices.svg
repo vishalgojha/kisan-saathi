@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#fff6ea"/>
+  <rect x="40" y="40" width="1200" height="640" rx="16" fill="#ffffff" stroke="#f0d9b6"/>
+  <text x="80" y="110" fill="#8a4b08" font-family="Arial, sans-serif" font-size="42" font-weight="700">Kisan Saathi - Market Prices</text>
+  <text x="80" y="170" fill="#7a6245" font-family="Arial, sans-serif" font-size="28">Placeholder screenshot</text>
+  <rect x="80" y="220" width="1120" height="380" rx="12" fill="#fff0dc" stroke="#edcc9f"/>
+  <text x="100" y="280" fill="#8a4b08" font-family="Arial, sans-serif" font-size="24">Replace with actual market prices dashboard screenshot</text>
+</svg>

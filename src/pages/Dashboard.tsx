@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import gsap from 'gsap';
 
-import DashboardWeather from '../components/dashboard/DashboardWeather';
+import WeatherForecast from '../components/WeatherForecast';
 import DashboardSchemes from '../components/dashboard/DashboardSchemes';
 import DashboardAdvisory from '../components/dashboard/DashboardAdvisory';
 import DashboardNutrient from '../components/dashboard/DashboardNutrient';
@@ -241,11 +241,8 @@ function DashboardContent() {
                         {/* Dashboard Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                             {/* Weather */}
-                            <div className="dashboard-card">
-                                <DashboardWeather 
-                                    location={profile.location} 
-                                    language={language} 
-                                />
+                            <div className="dashboard-card md:col-span-2 lg:col-span-3">
+                                <WeatherForecast defaultLocation={`${profile.location}, ${profile.state}`} />
                             </div>
 
                             {/* Market Prices */}

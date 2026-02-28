@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#eef6ff"/>
+  <rect x="40" y="40" width="1200" height="640" rx="16" fill="#ffffff" stroke="#c9def8"/>
+  <text x="80" y="110" fill="#1f5a99" font-family="Arial, sans-serif" font-size="42" font-weight="700">Kisan Saathi - Weather Forecast</text>
+  <text x="80" y="170" fill="#4f6f8f" font-family="Arial, sans-serif" font-size="28">Placeholder screenshot</text>
+  <rect x="80" y="220" width="1120" height="380" rx="12" fill="#e7f1ff" stroke="#bdd5f2"/>
+  <text x="100" y="280" fill="#1f5a99" font-family="Arial, sans-serif" font-size="24">Replace with actual weather forecast dashboard screenshot</text>
+</svg>

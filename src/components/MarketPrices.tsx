@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, CalendarDays, MapPin, Minus, RefreshCw, TrendingUp } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, ArrowDown, ArrowUp, CalendarDays, MapPin, Minus, RefreshCw, RotateCcw, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { createMarketPricesAdapter, MARKET_MANDI_DIRECTORY, type Trend, type TrendRow } from '@/adapters/marketPricesAdapter';
+import { getLocalizedText, type SupportedLanguage } from '@/adapters/types/common';
 import { useLanguage } from './LanguageContext';
 
 type MarketPricesProps = {
@@ -11,247 +12,44 @@ type MarketPricesProps = {
     defaultState?: string;
 };
 
-type Trend = 'up' | 'down' | 'stable';
-
-type PriceCard = {
-    label: string;
-    value: number;
-    trend: Trend;
-    delta: number;
-};
-
-type TrendRow = {
-    dateLabel: string;
-    mandi: string;
-    minPrice: number;
-    modalPrice: number;
-    maxPrice: number;
-    trend: Trend;
-};
-
-type MandiInfo = {
-    mandi: string;
-    district: string;
-};
-
-const mandiDirectory: Record<string, MandiInfo[]> = {
-    'Madhya Pradesh': [
-        { mandi: 'Indore APMC', district: 'Indore' },
-        { mandi: 'Bhopal APMC', district: 'Bhopal' },
-        { mandi: 'Ujjain APMC', district: 'Ujjain' },
-        { mandi: 'Dewas APMC', district: 'Dewas' },
-    ],
-    Maharashtra: [
-        { mandi: 'Nashik APMC', district: 'Nashik' },
-        { mandi: 'Pune APMC', district: 'Pune' },
-        { mandi: 'Nagpur APMC', district: 'Nagpur' },
-        { mandi: 'Jalgaon APMC', district: 'Jalgaon' },
-    ],
-    'Uttar Pradesh': [
-        { mandi: 'Kanpur APMC', district: 'Kanpur' },
-        { mandi: 'Lucknow APMC', district: 'Lucknow' },
-        { mandi: 'Varanasi APMC', district: 'Varanasi' },
-        { mandi: 'Agra APMC', district: 'Agra' },
-    ],
-    Rajasthan: [
-        { mandi: 'Jaipur APMC', district: 'Jaipur' },
-        { mandi: 'Kota APMC', district: 'Kota' },
-        { mandi: 'Ajmer APMC', district: 'Ajmer' },
-        { mandi: 'Alwar APMC', district: 'Alwar' },
-    ],
-    Punjab: [
-        { mandi: 'Ludhiana APMC', district: 'Ludhiana' },
-        { mandi: 'Patiala APMC', district: 'Patiala' },
-        { mandi: 'Amritsar APMC', district: 'Amritsar' },
-        { mandi: 'Bathinda APMC', district: 'Bathinda' },
-    ],
-    Haryana: [
-        { mandi: 'Karnal APMC', district: 'Karnal' },
-        { mandi: 'Hisar APMC', district: 'Hisar' },
-        { mandi: 'Rohtak APMC', district: 'Rohtak' },
-        { mandi: 'Sirsa APMC', district: 'Sirsa' },
-    ],
-    Gujarat: [
-        { mandi: 'Ahmedabad APMC', district: 'Ahmedabad' },
-        { mandi: 'Rajkot APMC', district: 'Rajkot' },
-        { mandi: 'Surat APMC', district: 'Surat' },
-        { mandi: 'Vadodara APMC', district: 'Vadodara' },
-    ],
-};
-
-const basePriceMap: Record<string, number> = {
-    wheat: 2420,
-    rice: 2680,
-    soybean: 5220,
-    gram: 5480,
-    maize: 2140,
-    mustard: 6120,
-    cotton: 7480,
-    onion: 1720,
-    tomato: 1640,
-    potato: 1530,
-};
-
-const hashText = (value: string) =>
-    value.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+const cropDefaults = ['Wheat', 'Rice', 'Soybean', 'Maize'];
 
 const formatINR = (value: number) =>
     new Intl.NumberFormat('en-IN').format(Math.round(value));
 
-const getDateLabel = (offset: number, language: 'hi' | 'en') => {
-    const date = new Date();
-    date.setDate(date.getDate() - offset);
-    if (offset === 0) return language === 'hi' ? 'आज' : 'Today';
-    if (offset === 1) return language === 'hi' ? 'कल' : 'Yesterday';
-    return date.toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', {
-        day: '2-digit',
-        month: 'short',
-    });
-};
-
-const trendFromDelta = (delta: number): Trend => {
-    if (delta > 0) return 'up';
-    if (delta < 0) return 'down';
-    return 'stable';
-};
-
-const buildTrendRows = (
-    crop: string,
-    state: string,
-    mandi: string,
-    refreshKey: number,
-    language: 'hi' | 'en'
-): TrendRow[] => {
-    const normalizedCrop = crop.trim().toLowerCase();
-    const basePrice = basePriceMap[normalizedCrop] || 2500;
-    const seed = hashText(`${normalizedCrop}:${state}:${mandi}:${refreshKey}`);
-    const rows: TrendRow[] = [];
-
-    for (let dayOffset = 6; dayOffset >= 0; dayOffset -= 1) {
-        const dayFactor = (seed + dayOffset * 19) % 260;
-        const deviation = dayFactor - 130;
-        const modalPrice = Math.max(500, basePrice + deviation);
-        const minPrice = Math.max(400, modalPrice - (110 + (dayOffset % 3) * 20));
-        const maxPrice = modalPrice + (120 + (dayOffset % 4) * 15);
-        const delta = ((seed + dayOffset * 7) % 3) - 1;
-
-        rows.push({
-            dateLabel: getDateLabel(dayOffset, language),
-            mandi,
-            minPrice,
-            modalPrice,
-            maxPrice,
-            trend: trendFromDelta(delta),
-        });
-    }
-
-    return rows;
-};
-
-const buildNearbyCards = (
-    crop: string,
-    state: string,
-    selectedMandi: string,
-    refreshKey: number
-): PriceCard[] => {
-    const mandis = mandiDirectory[state] || [];
-    const normalizedCrop = crop.trim().toLowerCase();
-    const basePrice = basePriceMap[normalizedCrop] || 2500;
-
-    return mandis.map((item, index) => {
-        const seed = hashText(`${item.mandi}:${state}:${normalizedCrop}:${refreshKey}`);
-        const shift = ((seed + index * 23) % 241) - 120;
-        const value = Math.max(500, basePrice + shift);
-        const delta = ((seed + index * 17) % 9) - 4;
-
-        if (item.mandi === selectedMandi) {
-            return {
-                label: item.mandi,
-                value,
-                trend: trendFromDelta(delta),
-                delta,
-            };
-        }
-
-        return {
-            label: item.mandi,
-            value: value - 18 + index * 5,
-            trend: trendFromDelta(delta - 1),
-            delta: delta - 1,
-        };
-    });
-};
+const asLanguage = (value: string): SupportedLanguage => (value === 'en' ? 'en' : 'hi');
 
 export default function MarketPrices({ crops = [], defaultState = 'Madhya Pradesh' }: MarketPricesProps) {
     const { language } = useLanguage();
+    const safeLanguage = asLanguage(language);
+    const adapter = useMemo(() => createMarketPricesAdapter(), []);
+
     const [refreshKey, setRefreshKey] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [snapshot, setSnapshot] = useState<Awaited<ReturnType<typeof adapter.getSnapshot>> | null>(null);
 
-    const cropOptions = useMemo(() => {
-        if (crops.length > 0) return crops;
-        return ['Wheat', 'Rice', 'Soybean', 'Maize'];
-    }, [crops]);
-
-    const stateOptions = useMemo(() => Object.keys(mandiDirectory), []);
+    const cropOptions = useMemo(() => (crops.length > 0 ? crops : cropDefaults), [crops]);
+    const stateOptions = useMemo(() => Object.keys(MARKET_MANDI_DIRECTORY), []);
     const initialState = stateOptions.includes(defaultState) ? defaultState : stateOptions[0] || 'Madhya Pradesh';
 
     const [selectedCrop, setSelectedCrop] = useState(cropOptions[0] || 'Wheat');
     const [selectedState, setSelectedState] = useState(initialState);
 
-    const mandiOptions = useMemo(() => mandiDirectory[selectedState] || [], [selectedState]);
+    const mandiOptions = useMemo(() => MARKET_MANDI_DIRECTORY[selectedState] || [], [selectedState]);
     const [selectedMandi, setSelectedMandi] = useState(mandiOptions[0]?.mandi || '');
-
-    useEffect(() => {
-        if (!cropOptions.includes(selectedCrop)) {
-            setSelectedCrop(cropOptions[0] || 'Wheat');
-        }
-    }, [cropOptions, selectedCrop]);
-
-    useEffect(() => {
-        if (!stateOptions.includes(selectedState)) {
-            setSelectedState(initialState);
-        }
-    }, [selectedState, stateOptions, initialState]);
-
-    useEffect(() => {
-        if (mandiOptions.length === 0) {
-            setSelectedMandi('');
-            return;
-        }
-        if (!mandiOptions.some((item) => item.mandi === selectedMandi)) {
-            setSelectedMandi(mandiOptions[0].mandi);
-        }
-    }, [mandiOptions, selectedMandi]);
-
-    const trendRows = useMemo(
-        () => buildTrendRows(selectedCrop, selectedState, selectedMandi, refreshKey, language),
-        [selectedCrop, selectedState, selectedMandi, refreshKey, language]
-    );
-
-    const nearbyCards = useMemo(
-        () => buildNearbyCards(selectedCrop, selectedState, selectedMandi, refreshKey),
-        [selectedCrop, selectedState, selectedMandi, refreshKey]
-    );
-
-    const latest = trendRows[trendRows.length - 1];
-    const previous = trendRows[trendRows.length - 2];
-    const latestDelta = latest && previous ? latest.modalPrice - previous.modalPrice : 0;
-    const weekHigh = trendRows.reduce((max, row) => Math.max(max, row.maxPrice), 0);
-    const weekLow = trendRows.reduce((min, row) => Math.min(min, row.minPrice), Number.MAX_SAFE_INTEGER);
-    const weekTrend = trendFromDelta(latestDelta);
-
-    const selectedDistrict =
-        mandiOptions.find((item) => item.mandi === selectedMandi)?.district || '';
 
     const content = {
         title: { hi: 'मार्केट प्राइस कार्ड', en: 'Market Prices' },
         subtitle: {
-            hi: 'राज्य, फसल और मंडी चुनें; मॉक भाव और रुझान देखें',
-            en: 'Select state, crop, and mandi to view mock rates and trends',
+            hi: 'राज्य, फसल और मंडी चुनें; मॉक/लाइव भाव और रुझान देखें',
+            en: 'Select state, crop, and mandi to view mock/live rates and trends',
         },
         state: { hi: 'राज्य', en: 'State' },
         crop: { hi: 'फसल', en: 'Crop' },
         mandi: { hi: 'मंडी', en: 'Mandi' },
         refresh: { hi: 'रिफ्रेश', en: 'Refresh' },
+        retry: { hi: 'फिर से कोशिश करें', en: 'Retry' },
         todayRate: { hi: 'आज का भाव', en: 'Today Rate' },
         weekHigh: { hi: 'साप्ताहिक उच्च', en: 'Week High' },
         weekLow: { hi: 'साप्ताहिक निम्न', en: 'Week Low' },
@@ -267,19 +65,82 @@ export default function MarketPrices({ crops = [], defaultState = 'Madhya Prades
         stable: { hi: 'स्थिर', en: 'Stable' },
         perQuintal: { hi: 'रु/क्विंटल', en: 'Rs/Quintal' },
         note: {
-            hi: 'डेमो डेटा: वास्तविक लेनदेन से पहले स्थानीय मंडी रेट की पुष्टि करें।',
-            en: 'Demo data: verify with local mandi rates before real transactions.',
+            hi: 'डेमो/एडाप्टर डेटा: वास्तविक लेनदेन से पहले स्थानीय मंडी रेट की पुष्टि करें।',
+            en: 'Demo/adapter data: verify local mandi rates before real transactions.',
         },
         updated: { hi: 'अपडेट', en: 'Updated' },
+        loading: { hi: 'भाव डेटा लोड हो रहा है...', en: 'Loading price data...' },
+        validation: { hi: 'राज्य, फसल और मंडी चुनें।', en: 'Select state, crop, and mandi.' },
+        serviceError: {
+            hi: 'मार्केट प्राइस सेवा अभी उपलब्ध नहीं है।',
+            en: 'Market prices service is currently unavailable.',
+        },
+        empty: {
+            hi: 'इस चयन के लिए कोई भाव डेटा नहीं मिला।',
+            en: 'No price data found for this selection.',
+        },
     };
 
-    const getText = (obj: { hi: string; en: string }) => obj[language] || obj.en;
+    const getText = (text: { hi: string; en: string }) => getLocalizedText(text, safeLanguage);
 
-    const getTrendLabel = (trend: Trend) => {
-        if (trend === 'up') return getText(content.up);
-        if (trend === 'down') return getText(content.down);
-        return getText(content.stable);
-    };
+    useEffect(() => {
+        if (!cropOptions.includes(selectedCrop)) {
+            setSelectedCrop(cropOptions[0] || 'Wheat');
+        }
+    }, [cropOptions, selectedCrop]);
+
+    useEffect(() => {
+        if (!stateOptions.includes(selectedState)) {
+            setSelectedState(initialState);
+        }
+    }, [stateOptions, selectedState, initialState]);
+
+    useEffect(() => {
+        if (mandiOptions.length === 0) {
+            setSelectedMandi('');
+            return;
+        }
+        if (!mandiOptions.some((item) => item.mandi === selectedMandi)) {
+            setSelectedMandi(mandiOptions[0].mandi);
+        }
+    }, [mandiOptions, selectedMandi]);
+
+    const fetchSnapshot = useCallback(async () => {
+        if (!selectedCrop || !selectedState || !selectedMandi) {
+            setError(getText(content.validation));
+            return;
+        }
+
+        setError('');
+        setIsLoading(true);
+        try {
+            const data = await adapter.getSnapshot({
+                crop: selectedCrop,
+                state: selectedState,
+                mandi: selectedMandi,
+                language: safeLanguage,
+                refreshKey,
+            });
+            setSnapshot(data);
+        } catch {
+            setError(getText(content.serviceError));
+            setSnapshot(null);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [adapter, selectedCrop, selectedState, selectedMandi, safeLanguage, refreshKey]);
+
+    useEffect(() => {
+        fetchSnapshot();
+    }, [fetchSnapshot]);
+
+    const trendRows: TrendRow[] = snapshot?.trendRows || [];
+    const latest = trendRows[trendRows.length - 1];
+    const previous = trendRows[trendRows.length - 2];
+    const latestDelta = latest && previous ? latest.modalPrice - previous.modalPrice : 0;
+    const weekTrend: Trend = latestDelta > 0 ? 'up' : latestDelta < 0 ? 'down' : 'stable';
+    const weekHigh = trendRows.reduce((max, row) => Math.max(max, row.maxPrice), 0);
+    const weekLow = trendRows.reduce((min, row) => Math.min(min, row.minPrice), Number.MAX_SAFE_INTEGER);
 
     const getTrendIcon = (trend: Trend) => {
         if (trend === 'up') return <ArrowUp className="w-3.5 h-3.5 text-emerald-600" />;
@@ -287,8 +148,14 @@ export default function MarketPrices({ crops = [], defaultState = 'Madhya Prades
         return <Minus className="w-3.5 h-3.5 text-gray-500" />;
     };
 
+    const getTrendLabel = (trend: Trend) => {
+        if (trend === 'up') return getText(content.up);
+        if (trend === 'down') return getText(content.down);
+        return getText(content.stable);
+    };
+
     return (
-        <Card className="border-0 shadow-lg">
+        <Card className="border-0 shadow-lg" data-testid="market-prices">
             <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-3 mb-4">
                     <div>
@@ -303,6 +170,7 @@ export default function MarketPrices({ crops = [], defaultState = 'Madhya Prades
                         size="sm"
                         onClick={() => setRefreshKey((prev) => prev + 1)}
                         className="rounded-xl"
+                        data-testid="market-refresh"
                     >
                         <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
                         {getText(content.refresh)}
@@ -357,130 +225,159 @@ export default function MarketPrices({ crops = [], defaultState = 'Madhya Prades
                     </div>
                 </div>
 
-                <div className="rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 p-4 mb-4">
-                    <div className="flex flex-wrap justify-between gap-3">
-                        <div>
-                            <p className="font-semibold text-gray-900 flex items-center gap-1.5">
-                                <MapPin className="w-3.5 h-3.5 text-amber-600" />
-                                {selectedMandi}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                                {getText(content.district)}: {selectedDistrict}
-                            </p>
-                        </div>
-                        <p className="text-xs text-gray-500">
-                            {getText(content.updated)}:{' '}
-                            {new Date().toLocaleTimeString('en-IN', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                            })}
-                        </p>
-                    </div>
+                {isLoading && <p className="text-sm text-gray-600 mb-3">{getText(content.loading)}</p>}
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 text-sm">
-                        <div className="rounded-xl bg-white/80 border border-amber-100 p-2.5">
-                            <p className="text-xs text-gray-500">{getText(content.todayRate)}</p>
-                            <p className="font-semibold text-amber-700">Rs {formatINR(latest?.modalPrice || 0)}</p>
-                        </div>
-                        <div className="rounded-xl bg-white/80 border border-amber-100 p-2.5">
-                            <p className="text-xs text-gray-500">{getText(content.weekHigh)}</p>
-                            <p className="font-semibold text-emerald-700">Rs {formatINR(weekHigh)}</p>
-                        </div>
-                        <div className="rounded-xl bg-white/80 border border-amber-100 p-2.5">
-                            <p className="text-xs text-gray-500">{getText(content.weekLow)}</p>
-                            <p className="font-semibold text-slate-700">Rs {formatINR(weekLow)}</p>
-                        </div>
-                        <div className="rounded-xl bg-white/80 border border-amber-100 p-2.5">
-                            <p className="text-xs text-gray-500">{getText(content.trend)}</p>
-                            <p className="font-semibold inline-flex items-center gap-1">
-                                {getTrendIcon(weekTrend)}
-                                {getTrendLabel(weekTrend)}
-                            </p>
-                        </div>
+                {error && (
+                    <div className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 flex items-start justify-between gap-3">
+                        <span className="inline-flex items-center gap-1">
+                            <AlertTriangle className="w-4 h-4 mt-0.5" />
+                            {error}
+                        </span>
+                        <Button size="sm" variant="outline" className="h-7 rounded-lg" onClick={fetchSnapshot}>
+                            <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                            {getText(content.retry)}
+                        </Button>
                     </div>
-                </div>
+                )}
 
-                <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-100 mb-4">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50">
-                            <tr className="text-left text-gray-600">
-                                <th className="px-3 py-2 font-medium">{getText(content.date)}</th>
-                                <th className="px-3 py-2 font-medium">{getText(content.mandi)}</th>
-                                <th className="px-3 py-2 font-medium">{getText(content.min)}</th>
-                                <th className="px-3 py-2 font-medium">{getText(content.modal)}</th>
-                                <th className="px-3 py-2 font-medium">{getText(content.max)}</th>
-                                <th className="px-3 py-2 font-medium">{getText(content.trend)}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                {!isLoading && !error && trendRows.length === 0 && (
+                    <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 flex items-start justify-between gap-3">
+                        <span>{getText(content.empty)}</span>
+                        <Button size="sm" variant="outline" className="h-7 rounded-lg" onClick={fetchSnapshot}>
+                            <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                            {getText(content.retry)}
+                        </Button>
+                    </div>
+                )}
+
+                {!error && trendRows.length > 0 && (
+                    <>
+                        <div className="rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 p-4 mb-4">
+                            <div className="flex flex-wrap justify-between gap-3">
+                                <div>
+                                    <p className="font-semibold text-gray-900 flex items-center gap-1.5">
+                                        <MapPin className="w-3.5 h-3.5 text-amber-600" />
+                                        {selectedMandi}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {getText(content.district)}: {snapshot?.district || '-'}
+                                    </p>
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                    {getText(content.updated)}:{' '}
+                                    {new Date(snapshot?.updatedAt || Date.now()).toLocaleTimeString('en-IN', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    })}
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 text-sm">
+                                <div className="rounded-xl bg-white/80 border border-amber-100 p-2.5" data-testid="market-today-rate">
+                                    <p className="text-xs text-gray-500">{getText(content.todayRate)}</p>
+                                    <p className="font-semibold text-amber-700">Rs {formatINR(latest?.modalPrice || 0)}</p>
+                                </div>
+                                <div className="rounded-xl bg-white/80 border border-amber-100 p-2.5">
+                                    <p className="text-xs text-gray-500">{getText(content.weekHigh)}</p>
+                                    <p className="font-semibold text-emerald-700">Rs {formatINR(weekHigh)}</p>
+                                </div>
+                                <div className="rounded-xl bg-white/80 border border-amber-100 p-2.5">
+                                    <p className="text-xs text-gray-500">{getText(content.weekLow)}</p>
+                                    <p className="font-semibold text-slate-700">Rs {formatINR(weekLow)}</p>
+                                </div>
+                                <div className="rounded-xl bg-white/80 border border-amber-100 p-2.5">
+                                    <p className="text-xs text-gray-500">{getText(content.trend)}</p>
+                                    <p className="font-semibold inline-flex items-center gap-1">
+                                        {getTrendIcon(weekTrend)}
+                                        {getTrendLabel(weekTrend)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-100 mb-4">
+                            <table className="w-full text-sm">
+                                <thead className="bg-gray-50">
+                                    <tr className="text-left text-gray-600">
+                                        <th className="px-3 py-2 font-medium">{getText(content.date)}</th>
+                                        <th className="px-3 py-2 font-medium">{getText(content.mandi)}</th>
+                                        <th className="px-3 py-2 font-medium">{getText(content.min)}</th>
+                                        <th className="px-3 py-2 font-medium">{getText(content.modal)}</th>
+                                        <th className="px-3 py-2 font-medium">{getText(content.max)}</th>
+                                        <th className="px-3 py-2 font-medium">{getText(content.trend)}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {trendRows.map((row) => (
+                                        <tr key={`${row.dateLabel}-${row.mandi}`} className="border-t border-gray-100" data-testid="market-trend-row">
+                                            <td className="px-3 py-2 text-gray-800">{row.dateLabel}</td>
+                                            <td className="px-3 py-2 text-gray-600">{row.mandi}</td>
+                                            <td className="px-3 py-2">Rs {formatINR(row.minPrice)}</td>
+                                            <td className="px-3 py-2 font-semibold text-amber-700">Rs {formatINR(row.modalPrice)}</td>
+                                            <td className="px-3 py-2">Rs {formatINR(row.maxPrice)}</td>
+                                            <td className="px-3 py-2">
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs">
+                                                    {getTrendIcon(row.trend)}
+                                                    {getTrendLabel(row.trend)}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="md:hidden space-y-2 mb-4">
                             {trendRows.map((row) => (
-                                <tr key={`${row.dateLabel}-${row.mandi}`} className="border-t border-gray-100">
-                                    <td className="px-3 py-2 text-gray-800">{row.dateLabel}</td>
-                                    <td className="px-3 py-2 text-gray-600">{row.mandi}</td>
-                                    <td className="px-3 py-2">Rs {formatINR(row.minPrice)}</td>
-                                    <td className="px-3 py-2 font-semibold text-amber-700">Rs {formatINR(row.modalPrice)}</td>
-                                    <td className="px-3 py-2">Rs {formatINR(row.maxPrice)}</td>
-                                    <td className="px-3 py-2">
+                                <div key={`${row.dateLabel}-${row.mandi}`} className="rounded-xl border border-gray-100 bg-white p-3">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p className="font-semibold text-gray-900">{row.dateLabel}</p>
+                                            <p className="text-xs text-gray-500">{row.mandi}</p>
+                                        </div>
                                         <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs">
                                             {getTrendIcon(row.trend)}
                                             {getTrendLabel(row.trend)}
                                         </span>
-                                    </td>
-                                </tr>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
+                                        <div>
+                                            <p className="text-gray-500">{getText(content.min)}</p>
+                                            <p className="font-medium">Rs {formatINR(row.minPrice)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500">{getText(content.modal)}</p>
+                                            <p className="font-semibold text-amber-700">Rs {formatINR(row.modalPrice)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500">{getText(content.max)}</p>
+                                            <p className="font-medium">Rs {formatINR(row.maxPrice)}</p>
+                                        </div>
+                                    </div>
+                                </div>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
+                        </div>
 
-                <div className="md:hidden space-y-2 mb-4">
-                    {trendRows.map((row) => (
-                        <div key={`${row.dateLabel}-${row.mandi}`} className="rounded-xl border border-gray-100 bg-white p-3">
-                            <div className="flex items-start justify-between gap-3">
-                                <div>
-                                    <p className="font-semibold text-gray-900">{row.dateLabel}</p>
-                                    <p className="text-xs text-gray-500">{row.mandi}</p>
-                                </div>
-                                <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs">
-                                    {getTrendIcon(row.trend)}
-                                    {getTrendLabel(row.trend)}
-                                </span>
-                            </div>
-                            <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
-                                <div>
-                                    <p className="text-gray-500">{getText(content.min)}</p>
-                                    <p className="font-medium">Rs {formatINR(row.minPrice)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-gray-500">{getText(content.modal)}</p>
-                                    <p className="font-semibold text-amber-700">Rs {formatINR(row.modalPrice)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-gray-500">{getText(content.max)}</p>
-                                    <p className="font-medium">Rs {formatINR(row.maxPrice)}</p>
-                                </div>
+                        <div>
+                            <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                                <CalendarDays className="w-3.5 h-3.5" />
+                                {getText(content.nearby)}
+                            </p>
+                            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                                {snapshot?.nearbyCards.map((card) => (
+                                    <div key={card.label} className="rounded-xl border border-gray-100 bg-white p-3">
+                                        <p className="text-xs text-gray-500 truncate">{card.label}</p>
+                                        <p className="font-semibold text-gray-900 mt-1">Rs {formatINR(card.value)}</p>
+                                        <p className="text-xs mt-1 inline-flex items-center gap-1">
+                                            {getTrendIcon(card.trend)}
+                                            {getTrendLabel(card.trend)} ({card.delta > 0 ? '+' : ''}{card.delta}%)
+                                        </p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                    ))}
-                </div>
-
-                <div>
-                    <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1">
-                        <CalendarDays className="w-3.5 h-3.5" />
-                        {getText(content.nearby)}
-                    </p>
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                        {nearbyCards.map((card) => (
-                            <div key={card.label} className="rounded-xl border border-gray-100 bg-white p-3">
-                                <p className="text-xs text-gray-500 truncate">{card.label}</p>
-                                <p className="font-semibold text-gray-900 mt-1">Rs {formatINR(card.value)}</p>
-                                <p className="text-xs mt-1 inline-flex items-center gap-1">
-                                    {getTrendIcon(card.trend)}
-                                    {getTrendLabel(card.trend)} ({card.delta > 0 ? '+' : ''}{card.delta}%)
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                    </>
+                )}
 
                 <p className="text-xs text-gray-500 mt-3">
                     {getText(content.perQuintal)} • {getText(content.note)}

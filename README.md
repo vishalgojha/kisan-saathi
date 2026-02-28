@@ -48,6 +48,7 @@ VITE_APP_ID=your_app_id
 VITE_API_BASE_URL=http://localhost:3000
 VITE_WHATSAPP_NUMBER=919876543210
 VITE_UPLOAD_ENDPOINT=
+VITE_DATA_MODE=mock
 ```
 
 ### Run Locally
@@ -63,6 +64,12 @@ Open: `http://localhost:5173`
 ```bash
 npm run typecheck
 npm run build
+```
+
+### E2E Gate
+
+```bash
+npm run test:e2e
 ```
 
 ## Screenshots

@@ -243,7 +243,11 @@ function DashboardContent() {
                             </div>
 
                             {/* Market Prices */}
-                            <div id="market-prices" className="dashboard-card md:col-span-2 lg:col-span-2 scroll-mt-24">
+                            <div
+                                id="market-prices"
+                                data-testid="dashboard-market-prices"
+                                className="dashboard-card md:col-span-2 lg:col-span-2 scroll-mt-24"
+                            >
                                 <MarketPrices
                                     crops={profile.crops}
                                     defaultState={profile.state}
@@ -291,7 +295,11 @@ function DashboardContent() {
                             </div>
 
                             {/* Disease Diagnosis */}
-                            <div id="disease-diagnosis" className="dashboard-card md:col-span-2 lg:col-span-2 scroll-mt-24">
+                            <div
+                                id="disease-diagnosis"
+                                data-testid="dashboard-disease-diagnosis"
+                                className="dashboard-card md:col-span-2 lg:col-span-2 scroll-mt-24"
+                            >
                                 <DiseaseDiagnosis crops={profile.crops} />
                             </div>
 

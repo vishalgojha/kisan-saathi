@@ -71,6 +71,7 @@ Add screenshots to `docs/screenshots/` and update these links if filenames diffe
 
 ![Home](docs/screenshots/home.svg)
 ![Dashboard](docs/screenshots/dashboard.svg)
+![AI Advisory Chat](docs/screenshots/ai-chat.svg)
 ![Crop Diagnosis](docs/screenshots/crop-diagnosis.svg)
 ![Disease Diagnosis](docs/screenshots/disease-diagnosis.svg)
 ![Market Prices](docs/screenshots/market-prices.svg)

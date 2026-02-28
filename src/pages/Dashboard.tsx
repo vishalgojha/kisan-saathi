@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sprout, Settings, Loader2, MapPin, Wheat, MessageCircle, Bell } from 'lucide-react';
+import { Sprout, Settings, Loader2, MapPin, Wheat, MessageCircle, Bell, Bot } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +39,13 @@ function DashboardContent() {
         crops: { hi: 'फसलें', en: 'Crops' },
         edit: { hi: 'बदलें', en: 'Edit' },
         whatsapp: { hi: 'व्हाट्सएप पर पूछें', en: 'Ask on WhatsApp' },
-        notificationSettings: { hi: 'सूचना सेटिंग्स', en: 'Notification Settings' }
+        notificationSettings: { hi: 'सूचना सेटिंग्स', en: 'Notification Settings' },
+        aiChatTitle: { hi: 'AI कृषि चैट', en: 'AI Advisory Chat' },
+        aiChatDesc: {
+            hi: 'रोग, मंडी भाव, मौसम और योजनाओं पर बातचीत करें',
+            en: 'Chat for disease, mandi prices, weather, and schemes'
+        },
+        aiChatButton: { hi: 'चैट शुरू करें', en: 'Start Chat' }
     };
 
     useEffect(() => {
@@ -288,6 +294,23 @@ function DashboardContent() {
                             <div className="dashboard-card md:col-span-2 lg:col-span-2">
                                 <DiseaseDiagnosis crops={profile.crops} />
                             </div>
+
+                            {/* WhatsApp CTA */}
+                            <Card className="dashboard-card border-0 shadow-lg bg-gradient-to-br from-teal-500 to-emerald-600 text-white">
+                                <CardContent className="p-5 text-center">
+                                    <Bot className="w-8 h-8 mx-auto mb-2" />
+                                    <h3 className="font-bold mb-2">{getText(content.aiChatTitle)}</h3>
+                                    <p className="text-sm text-emerald-100 mb-4">
+                                        {getText(content.aiChatDesc)}
+                                    </p>
+                                    <Link to={createPageUrl('AIHelp')}>
+                                        <Button className="bg-white text-emerald-700 hover:bg-gray-100 rounded-xl w-full">
+                                            <MessageCircle className="w-4 h-4 mr-2" />
+                                            {getText(content.aiChatButton)}
+                                        </Button>
+                                    </Link>
+                                </CardContent>
+                            </Card>
 
                             {/* WhatsApp CTA */}
                             <Card className="dashboard-card border-0 shadow-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white">

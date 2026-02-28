@@ -20,6 +20,7 @@ import NotificationCenter from '../components/dashboard/NotificationCenter';
 import NotificationSettings from '../components/dashboard/NotificationSettings';
 import DiseaseDiagnosis from '../components/DiseaseDiagnosis';
 import MarketPrices from '../components/MarketPrices';
+import CropRecommendation from '../components/CropRecommendation';
 
 function DashboardContent() {
     const { language } = useLanguage();
@@ -267,6 +268,11 @@ function DashboardContent() {
                                     defaultState={profile.state}
                                     crops={profile.crops}
                                 />
+                            </div>
+
+                            {/* Crop Recommendation */}
+                            <div className="dashboard-card md:col-span-2 lg:col-span-2">
+                                <CropRecommendation defaultState={profile.state} />
                             </div>
 
                             {/* Advisory */}

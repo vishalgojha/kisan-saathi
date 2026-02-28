@@ -76,6 +76,7 @@ Add screenshots to `docs/screenshots/` and update these links if filenames diffe
 ![Market Prices](docs/screenshots/market-prices.svg)
 ![Weather Forecast](docs/screenshots/weather-forecast.svg)
 ![Govt Schemes Finder](docs/screenshots/govt-schemes-finder.svg)
+![Crop Recommendation](docs/screenshots/crop-recommendation.svg)
 ![Weather and Prices](docs/screenshots/weather-prices.svg)
 
 ## Farmer Guides

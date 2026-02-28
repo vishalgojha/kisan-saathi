@@ -19,6 +19,7 @@ import DashboardEnergy from '../components/dashboard/DashboardEnergy';
 import ProfileSetup from '../components/dashboard/ProfileSetup';
 import NotificationCenter from '../components/dashboard/NotificationCenter';
 import NotificationSettings from '../components/dashboard/NotificationSettings';
+import DiseaseDiagnosis from '../components/DiseaseDiagnosis';
 
 function DashboardContent() {
     const { language } = useLanguage();
@@ -304,6 +305,11 @@ function DashboardContent() {
                                     state={profile.state}
                                     language={language}
                                 />
+                            </div>
+
+                            {/* Disease Diagnosis */}
+                            <div className="dashboard-card md:col-span-2 lg:col-span-2">
+                                <DiseaseDiagnosis crops={profile.crops} />
                             </div>
 
                             {/* WhatsApp CTA */}

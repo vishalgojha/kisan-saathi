@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#eefbff"/>
+  <rect x="40" y="40" width="1200" height="640" rx="16" fill="#ffffff" stroke="#c7e3ec"/>
+  <text x="80" y="110" fill="#145167" font-family="Arial, sans-serif" font-size="42" font-weight="700">Kisan Saathi - Weather &amp; Prices</text>
+  <text x="80" y="170" fill="#4f6b74" font-family="Arial, sans-serif" font-size="28">Placeholder screenshot</text>
+  <rect x="80" y="220" width="1120" height="380" rx="12" fill="#def5fc" stroke="#b9dde9"/>
+  <text x="100" y="280" fill="#1f637a" font-family="Arial, sans-serif" font-size="24">Replace with actual weather and mandi prices screenshot</text>
+</svg>

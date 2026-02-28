@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#f4f7f2"/>
+  <rect x="40" y="40" width="1200" height="640" rx="16" fill="#ffffff" stroke="#d6e3d0"/>
+  <text x="80" y="110" fill="#1f5131" font-family="Arial, sans-serif" font-size="42" font-weight="700">Kisan Saathi - Home</text>
+  <text x="80" y="170" fill="#4b5c4a" font-family="Arial, sans-serif" font-size="28">Placeholder screenshot</text>
+  <rect x="80" y="220" width="1120" height="380" rx="12" fill="#eef6ea" stroke="#cde0c5"/>
+  <text x="100" y="280" fill="#2c5839" font-family="Arial, sans-serif" font-size="24">Replace with actual home page screenshot</text>
+</svg>

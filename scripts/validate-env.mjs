@@ -33,6 +33,10 @@ if (isProd && dataMode === 'live' && allowMockFallback) {
   issues.push('VITE_ALLOW_MOCK_FALLBACK must be false in production live mode.');
 }
 
+if (isProd && !process.env.VITE_MONITORING_ENDPOINT) {
+  issues.push('VITE_MONITORING_ENDPOINT is required in production.');
+}
+
 if (issues.length > 0) {
   console.error('\nEnvironment validation failed:\n');
   for (const issue of issues) {

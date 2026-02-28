@@ -50,6 +50,9 @@ VITE_WHATSAPP_NUMBER=919876543210
 VITE_UPLOAD_ENDPOINT=
 VITE_DATA_MODE=mock
 VITE_ALLOW_MOCK_FALLBACK=true
+VITE_MONITORING_ENDPOINT=
+VITE_MONITORING_API_KEY=
+VITE_RELEASE_VERSION=
 ```
 
 Runtime behavior:
@@ -57,6 +60,7 @@ Runtime behavior:
 - `VITE_DATA_MODE=live`: use live adapters.
 - In production, default mode is `live` if not specified.
 - In production live mode, set `VITE_ALLOW_MOCK_FALLBACK=false` to fail fast.
+- `VITE_MONITORING_ENDPOINT`: error export endpoint (required in production).
 
 ### Run Locally
 
@@ -128,12 +132,32 @@ Minimum launch checks:
    - `VITE_DATA_MODE=live`
    - `VITE_ALLOW_MOCK_FALLBACK=false`
    - Valid `VITE_API_BASE_URL`
+   - Valid `VITE_MONITORING_ENDPOINT`
 2. Run:
    - `npm run validate:env`
    - `npm run typecheck`
    - `npm run build`
    - `npm run test:e2e`
 3. Confirm CI (`.github/workflows/ci.yml`) is green on `main`.
+
+## Deployment Pipeline
+
+Workflows:
+- `.github/workflows/ci.yml`: PR/main quality gate
+- `.github/workflows/deploy.yml`: staging and production deployments
+
+Required GitHub Environment setup:
+1. Create environment `staging` with:
+   - Variables: `VITE_APP_ID`, `VITE_API_BASE_URL`, `VITE_WHATSAPP_NUMBER`, `VITE_UPLOAD_ENDPOINT`, `VITE_MONITORING_ENDPOINT`
+   - Secrets: `DEPLOY_HOOK_URL`, optional `VITE_MONITORING_API_KEY`
+2. Create environment `production` with:
+   - Variables: `VITE_APP_ID`, `VITE_API_BASE_URL`, `VITE_WHATSAPP_NUMBER`, `VITE_UPLOAD_ENDPOINT`, `VITE_MONITORING_ENDPOINT`
+   - Secrets: `DEPLOY_HOOK_URL`, optional `VITE_MONITORING_API_KEY`
+   - Recommended: required reviewers enabled
+
+Deployment triggers:
+- Staging: automatic on push to `main`, or manual via `workflow_dispatch`
+- Production: automatic on tag push `v*`, or manual via `workflow_dispatch`
 
 ## License
 

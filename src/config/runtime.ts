@@ -5,6 +5,9 @@ export type RuntimeConfig = {
     uploadEndpoint: string;
     dataMode: 'mock' | 'live';
     allowMockFallback: boolean;
+    monitoringEndpoint: string;
+    monitoringApiKey: string;
+    releaseVersion: string;
     isProd: boolean;
 };
 
@@ -41,6 +44,9 @@ export const runtimeConfig: RuntimeConfig = {
     uploadEndpoint: String(import.meta.env.VITE_UPLOAD_ENDPOINT || '').trim(),
     dataMode,
     allowMockFallback,
+    monitoringEndpoint: String(import.meta.env.VITE_MONITORING_ENDPOINT || '').trim(),
+    monitoringApiKey: String(import.meta.env.VITE_MONITORING_API_KEY || '').trim(),
+    releaseVersion: String(import.meta.env.VITE_RELEASE_VERSION || '').trim(),
     isProd,
 };
 
@@ -54,6 +60,9 @@ export const getRuntimeWarnings = (): string[] => {
     }
     if (!runtimeConfig.whatsappNumber) {
         warnings.push('VITE_WHATSAPP_NUMBER is missing.');
+    }
+    if (runtimeConfig.isProd && !runtimeConfig.monitoringEndpoint) {
+        warnings.push('VITE_MONITORING_ENDPOINT is not configured; production errors will not be exported.');
     }
     return warnings;
 };

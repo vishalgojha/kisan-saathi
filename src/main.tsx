@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from '@/App'
 import '@/index.css'
 import { getRuntimeWarnings, runtimeConfig } from '@/config/runtime'
+import { reportRuntimeError } from '@/lib/monitoring'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>
@@ -21,9 +22,15 @@ if (runtimeWarnings.length > 0) {
 if (runtimeConfig.isProd) {
   window.addEventListener('error', (event) => {
     console.error('[RuntimeError]', event.error || event.message);
+    void reportRuntimeError('window.error', event.error || event.message, {
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    });
   });
   window.addEventListener('unhandledrejection', (event) => {
     console.error('[UnhandledPromiseRejection]', event.reason);
+    void reportRuntimeError('window.unhandledrejection', event.reason);
   });
 }
 

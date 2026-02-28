@@ -76,6 +76,7 @@ Add screenshots to `docs/screenshots/` and update these links if filenames diffe
 ![Disease Diagnosis](docs/screenshots/disease-diagnosis.svg)
 ![Disease Diagnosis Card](docs/screenshots/disease-diagnosis-card.svg)
 ![Market Prices](docs/screenshots/market-prices.svg)
+![Market Prices Card](docs/screenshots/market-prices-card.svg)
 ![Weather Forecast](docs/screenshots/weather-forecast.svg)
 ![Govt Schemes Finder](docs/screenshots/govt-schemes-finder.svg)
 ![Crop Recommendation](docs/screenshots/crop-recommendation.svg)

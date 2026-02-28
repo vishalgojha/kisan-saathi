@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, MapPin, Minus, RefreshCw, TrendingUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, CalendarDays, MapPin, Minus, RefreshCw, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,69 +13,173 @@ type MarketPricesProps = {
 
 type Trend = 'up' | 'down' | 'stable';
 
-type PriceRow = {
+type PriceCard = {
+    label: string;
+    value: number;
+    trend: Trend;
+    delta: number;
+};
+
+type TrendRow = {
+    dateLabel: string;
     mandi: string;
-    district: string;
     minPrice: number;
-    maxPrice: number;
     modalPrice: number;
+    maxPrice: number;
     trend: Trend;
 };
 
-const stateDistricts: Record<string, string[]> = {
-    'Madhya Pradesh': ['Indore', 'Bhopal', 'Ujjain', 'Dewas'],
-    Maharashtra: ['Nashik', 'Pune', 'Nagpur', 'Jalgaon'],
-    'Uttar Pradesh': ['Kanpur', 'Lucknow', 'Varanasi', 'Agra'],
-    Rajasthan: ['Jaipur', 'Kota', 'Ajmer', 'Alwar'],
-    Punjab: ['Ludhiana', 'Patiala', 'Amritsar', 'Bathinda'],
-    Haryana: ['Karnal', 'Hisar', 'Rohtak', 'Sirsa'],
-    Gujarat: ['Ahmedabad', 'Rajkot', 'Surat', 'Vadodara']
+type MandiInfo = {
+    mandi: string;
+    district: string;
+};
+
+const mandiDirectory: Record<string, MandiInfo[]> = {
+    'Madhya Pradesh': [
+        { mandi: 'Indore APMC', district: 'Indore' },
+        { mandi: 'Bhopal APMC', district: 'Bhopal' },
+        { mandi: 'Ujjain APMC', district: 'Ujjain' },
+        { mandi: 'Dewas APMC', district: 'Dewas' },
+    ],
+    Maharashtra: [
+        { mandi: 'Nashik APMC', district: 'Nashik' },
+        { mandi: 'Pune APMC', district: 'Pune' },
+        { mandi: 'Nagpur APMC', district: 'Nagpur' },
+        { mandi: 'Jalgaon APMC', district: 'Jalgaon' },
+    ],
+    'Uttar Pradesh': [
+        { mandi: 'Kanpur APMC', district: 'Kanpur' },
+        { mandi: 'Lucknow APMC', district: 'Lucknow' },
+        { mandi: 'Varanasi APMC', district: 'Varanasi' },
+        { mandi: 'Agra APMC', district: 'Agra' },
+    ],
+    Rajasthan: [
+        { mandi: 'Jaipur APMC', district: 'Jaipur' },
+        { mandi: 'Kota APMC', district: 'Kota' },
+        { mandi: 'Ajmer APMC', district: 'Ajmer' },
+        { mandi: 'Alwar APMC', district: 'Alwar' },
+    ],
+    Punjab: [
+        { mandi: 'Ludhiana APMC', district: 'Ludhiana' },
+        { mandi: 'Patiala APMC', district: 'Patiala' },
+        { mandi: 'Amritsar APMC', district: 'Amritsar' },
+        { mandi: 'Bathinda APMC', district: 'Bathinda' },
+    ],
+    Haryana: [
+        { mandi: 'Karnal APMC', district: 'Karnal' },
+        { mandi: 'Hisar APMC', district: 'Hisar' },
+        { mandi: 'Rohtak APMC', district: 'Rohtak' },
+        { mandi: 'Sirsa APMC', district: 'Sirsa' },
+    ],
+    Gujarat: [
+        { mandi: 'Ahmedabad APMC', district: 'Ahmedabad' },
+        { mandi: 'Rajkot APMC', district: 'Rajkot' },
+        { mandi: 'Surat APMC', district: 'Surat' },
+        { mandi: 'Vadodara APMC', district: 'Vadodara' },
+    ],
 };
 
 const basePriceMap: Record<string, number> = {
-    wheat: 2400,
-    rice: 2650,
-    soybean: 5200,
-    gram: 5400,
-    maize: 2150,
-    mustard: 6100,
-    cotton: 7400,
-    onion: 1700,
-    tomato: 1600,
-    potato: 1500
+    wheat: 2420,
+    rice: 2680,
+    soybean: 5220,
+    gram: 5480,
+    maize: 2140,
+    mustard: 6120,
+    cotton: 7480,
+    onion: 1720,
+    tomato: 1640,
+    potato: 1530,
 };
 
 const hashText = (value: string) =>
-    value.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    value.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
 
 const formatINR = (value: number) =>
     new Intl.NumberFormat('en-IN').format(Math.round(value));
 
-const buildMockPrices = (crop: string, state: string, refreshKey: number): PriceRow[] => {
-    const districts = stateDistricts[state] || ['Local District'];
-    const normalizedCrop = crop.trim().toLowerCase();
-    const base = basePriceMap[normalizedCrop] || 2500;
-    const seed = hashText(`${normalizedCrop}:${state}:${refreshKey}`);
+const getDateLabel = (offset: number, language: 'hi' | 'en') => {
+    const date = new Date();
+    date.setDate(date.getDate() - offset);
+    if (offset === 0) return language === 'hi' ? 'आज' : 'Today';
+    if (offset === 1) return language === 'hi' ? 'कल' : 'Yesterday';
+    return date.toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', {
+        day: '2-digit',
+        month: 'short',
+    });
+};
 
-    const rows = districts.map((district, index) => {
-        const variation = ((seed + index * 43) % 451) - 220;
-        const modalPrice = Math.max(500, base + variation);
-        const minPrice = Math.max(300, modalPrice - (120 + (index % 3) * 15));
-        const maxPrice = modalPrice + (100 + (index % 4) * 25);
-        const trendScore = (seed + index) % 3;
-        const trend: Trend = trendScore === 0 ? 'up' : trendScore === 1 ? 'down' : 'stable';
+const trendFromDelta = (delta: number): Trend => {
+    if (delta > 0) return 'up';
+    if (delta < 0) return 'down';
+    return 'stable';
+};
+
+const buildTrendRows = (
+    crop: string,
+    state: string,
+    mandi: string,
+    refreshKey: number,
+    language: 'hi' | 'en'
+): TrendRow[] => {
+    const normalizedCrop = crop.trim().toLowerCase();
+    const basePrice = basePriceMap[normalizedCrop] || 2500;
+    const seed = hashText(`${normalizedCrop}:${state}:${mandi}:${refreshKey}`);
+    const rows: TrendRow[] = [];
+
+    for (let dayOffset = 6; dayOffset >= 0; dayOffset -= 1) {
+        const dayFactor = (seed + dayOffset * 19) % 260;
+        const deviation = dayFactor - 130;
+        const modalPrice = Math.max(500, basePrice + deviation);
+        const minPrice = Math.max(400, modalPrice - (110 + (dayOffset % 3) * 20));
+        const maxPrice = modalPrice + (120 + (dayOffset % 4) * 15);
+        const delta = ((seed + dayOffset * 7) % 3) - 1;
+
+        rows.push({
+            dateLabel: getDateLabel(dayOffset, language),
+            mandi,
+            minPrice,
+            modalPrice,
+            maxPrice,
+            trend: trendFromDelta(delta),
+        });
+    }
+
+    return rows;
+};
+
+const buildNearbyCards = (
+    crop: string,
+    state: string,
+    selectedMandi: string,
+    refreshKey: number
+): PriceCard[] => {
+    const mandis = mandiDirectory[state] || [];
+    const normalizedCrop = crop.trim().toLowerCase();
+    const basePrice = basePriceMap[normalizedCrop] || 2500;
+
+    return mandis.map((item, index) => {
+        const seed = hashText(`${item.mandi}:${state}:${normalizedCrop}:${refreshKey}`);
+        const shift = ((seed + index * 23) % 241) - 120;
+        const value = Math.max(500, basePrice + shift);
+        const delta = ((seed + index * 17) % 9) - 4;
+
+        if (item.mandi === selectedMandi) {
+            return {
+                label: item.mandi,
+                value,
+                trend: trendFromDelta(delta),
+                delta,
+            };
+        }
 
         return {
-            mandi: `${district} APMC`,
-            district,
-            minPrice,
-            maxPrice,
-            modalPrice,
-            trend
+            label: item.mandi,
+            value: value - 18 + index * 5,
+            trend: trendFromDelta(delta - 1),
+            delta: delta - 1,
         };
     });
-
-    return rows.sort((a, b) => b.modalPrice - a.modalPrice);
 };
 
 export default function MarketPrices({ crops = [], defaultState = 'Madhya Pradesh' }: MarketPricesProps) {
@@ -87,8 +191,14 @@ export default function MarketPrices({ crops = [], defaultState = 'Madhya Prades
         return ['Wheat', 'Rice', 'Soybean', 'Maize'];
     }, [crops]);
 
+    const stateOptions = useMemo(() => Object.keys(mandiDirectory), []);
+    const initialState = stateOptions.includes(defaultState) ? defaultState : stateOptions[0] || 'Madhya Pradesh';
+
     const [selectedCrop, setSelectedCrop] = useState(cropOptions[0] || 'Wheat');
-    const [selectedState, setSelectedState] = useState(defaultState);
+    const [selectedState, setSelectedState] = useState(initialState);
+
+    const mandiOptions = useMemo(() => mandiDirectory[selectedState] || [], [selectedState]);
+    const [selectedMandi, setSelectedMandi] = useState(mandiOptions[0]?.mandi || '');
 
     useEffect(() => {
         if (!cropOptions.includes(selectedCrop)) {
@@ -96,46 +206,85 @@ export default function MarketPrices({ crops = [], defaultState = 'Madhya Prades
         }
     }, [cropOptions, selectedCrop]);
 
-    const prices = useMemo(
-        () => buildMockPrices(selectedCrop, selectedState, refreshKey),
-        [selectedCrop, selectedState, refreshKey]
+    useEffect(() => {
+        if (!stateOptions.includes(selectedState)) {
+            setSelectedState(initialState);
+        }
+    }, [selectedState, stateOptions, initialState]);
+
+    useEffect(() => {
+        if (mandiOptions.length === 0) {
+            setSelectedMandi('');
+            return;
+        }
+        if (!mandiOptions.some((item) => item.mandi === selectedMandi)) {
+            setSelectedMandi(mandiOptions[0].mandi);
+        }
+    }, [mandiOptions, selectedMandi]);
+
+    const trendRows = useMemo(
+        () => buildTrendRows(selectedCrop, selectedState, selectedMandi, refreshKey, language),
+        [selectedCrop, selectedState, selectedMandi, refreshKey, language]
     );
 
-    const bestMarket = prices[0];
+    const nearbyCards = useMemo(
+        () => buildNearbyCards(selectedCrop, selectedState, selectedMandi, refreshKey),
+        [selectedCrop, selectedState, selectedMandi, refreshKey]
+    );
+
+    const latest = trendRows[trendRows.length - 1];
+    const previous = trendRows[trendRows.length - 2];
+    const latestDelta = latest && previous ? latest.modalPrice - previous.modalPrice : 0;
+    const weekHigh = trendRows.reduce((max, row) => Math.max(max, row.maxPrice), 0);
+    const weekLow = trendRows.reduce((min, row) => Math.min(min, row.minPrice), Number.MAX_SAFE_INTEGER);
+    const weekTrend = trendFromDelta(latestDelta);
+
+    const selectedDistrict =
+        mandiOptions.find((item) => item.mandi === selectedMandi)?.district || '';
 
     const content = {
-        title: { hi: 'मार्केट प्राइस कार्ड', en: 'Market Prices Card' },
-        subtitle: { hi: 'फसल और राज्य चुनें, ताजा अनुमानित मंडी भाव देखें', en: 'Select crop and state to view mock mandi prices' },
-        crop: { hi: 'फसल', en: 'Crop' },
+        title: { hi: 'मार्केट प्राइस कार्ड', en: 'Market Prices' },
+        subtitle: {
+            hi: 'राज्य, फसल और मंडी चुनें; मॉक भाव और रुझान देखें',
+            en: 'Select state, crop, and mandi to view mock rates and trends',
+        },
         state: { hi: 'राज्य', en: 'State' },
+        crop: { hi: 'फसल', en: 'Crop' },
+        mandi: { hi: 'मंडी', en: 'Mandi' },
         refresh: { hi: 'रिफ्रेश', en: 'Refresh' },
-        bestMandi: { hi: 'सर्वश्रेष्ठ मंडी', en: 'Best Mandi' },
-        modal: { hi: 'मॉडल भाव', en: 'Modal Price' },
-        min: { hi: 'न्यूनतम', en: 'Min' },
-        max: { hi: 'अधिकतम', en: 'Max' },
+        todayRate: { hi: 'आज का भाव', en: 'Today Rate' },
+        weekHigh: { hi: 'साप्ताहिक उच्च', en: 'Week High' },
+        weekLow: { hi: 'साप्ताहिक निम्न', en: 'Week Low' },
         trend: { hi: 'रुझान', en: 'Trend' },
-        perQuintal: { hi: 'रु/क्विंटल', en: 'Rs/Quintal' },
-        updated: { hi: 'अपडेटेड', en: 'Updated' },
-        market: { hi: 'मंडी', en: 'Mandi' },
         district: { hi: 'जिला', en: 'District' },
+        date: { hi: 'तारीख', en: 'Date' },
+        min: { hi: 'न्यूनतम', en: 'Min' },
+        modal: { hi: 'मॉडल', en: 'Modal' },
+        max: { hi: 'अधिकतम', en: 'Max' },
+        nearby: { hi: 'नजदीकी मंडियां', en: 'Nearby Mandis' },
+        up: { hi: 'ऊपर', en: 'Up' },
+        down: { hi: 'नीचे', en: 'Down' },
+        stable: { hi: 'स्थिर', en: 'Stable' },
+        perQuintal: { hi: 'रु/क्विंटल', en: 'Rs/Quintal' },
         note: {
-            hi: 'डेमो डेटा: वास्तविक बिक्री से पहले स्थानीय मंडी रेट जांचें।',
-            en: 'Demo data: verify with local mandi rates before sale.'
-        }
+            hi: 'डेमो डेटा: वास्तविक लेनदेन से पहले स्थानीय मंडी रेट की पुष्टि करें।',
+            en: 'Demo data: verify with local mandi rates before real transactions.',
+        },
+        updated: { hi: 'अपडेट', en: 'Updated' },
     };
 
     const getText = (obj: { hi: string; en: string }) => obj[language] || obj.en;
+
+    const getTrendLabel = (trend: Trend) => {
+        if (trend === 'up') return getText(content.up);
+        if (trend === 'down') return getText(content.down);
+        return getText(content.stable);
+    };
 
     const getTrendIcon = (trend: Trend) => {
         if (trend === 'up') return <ArrowUp className="w-3.5 h-3.5 text-emerald-600" />;
         if (trend === 'down') return <ArrowDown className="w-3.5 h-3.5 text-red-600" />;
         return <Minus className="w-3.5 h-3.5 text-gray-500" />;
-    };
-
-    const getTrendText = (trend: Trend) => {
-        if (trend === 'up') return language === 'hi' ? 'ऊपर' : 'Up';
-        if (trend === 'down') return language === 'hi' ? 'नीचे' : 'Down';
-        return language === 'hi' ? 'स्थिर' : 'Stable';
     };
 
     return (
@@ -160,7 +309,22 @@ export default function MarketPrices({ crops = [], defaultState = 'Madhya Prades
                     </Button>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-3 mb-4">
+                <div className="grid md:grid-cols-3 gap-3 mb-4">
+                    <div>
+                        <p className="text-xs font-semibold text-gray-600 mb-2">{getText(content.state)}</p>
+                        <Select value={selectedState} onValueChange={setSelectedState}>
+                            <SelectTrigger className="h-10 rounded-xl bg-gray-50 border-gray-200">
+                                <SelectValue placeholder={getText(content.state)} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {stateOptions.map((state) => (
+                                    <SelectItem key={state} value={state}>
+                                        {state}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                     <div>
                         <p className="text-xs font-semibold text-gray-600 mb-2">{getText(content.crop)}</p>
                         <Select value={selectedCrop} onValueChange={setSelectedCrop}>
@@ -177,15 +341,15 @@ export default function MarketPrices({ crops = [], defaultState = 'Madhya Prades
                         </Select>
                     </div>
                     <div>
-                        <p className="text-xs font-semibold text-gray-600 mb-2">{getText(content.state)}</p>
-                        <Select value={selectedState} onValueChange={setSelectedState}>
+                        <p className="text-xs font-semibold text-gray-600 mb-2">{getText(content.mandi)}</p>
+                        <Select value={selectedMandi} onValueChange={setSelectedMandi}>
                             <SelectTrigger className="h-10 rounded-xl bg-gray-50 border-gray-200">
-                                <SelectValue placeholder={getText(content.state)} />
+                                <SelectValue placeholder={getText(content.mandi)} />
                             </SelectTrigger>
                             <SelectContent>
-                                {Object.keys(stateDistricts).map((state) => (
-                                    <SelectItem key={state} value={state}>
-                                        {state}
+                                {mandiOptions.map((item) => (
+                                    <SelectItem key={item.mandi} value={item.mandi}>
+                                        {item.mandi}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -193,32 +357,55 @@ export default function MarketPrices({ crops = [], defaultState = 'Madhya Prades
                     </div>
                 </div>
 
-                {bestMarket && (
-                    <div className="rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 p-4 mb-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                                <p className="text-xs text-amber-700 font-semibold">{getText(content.bestMandi)}</p>
-                                <p className="font-semibold text-gray-900 flex items-center gap-1.5 mt-1">
-                                    <MapPin className="w-3.5 h-3.5 text-amber-600" />
-                                    {bestMarket.mandi}
-                                </p>
-                                <p className="text-xs text-gray-500 mt-1">
-                                    {getText(content.updated)}: {new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                            </div>
-                            <Badge className="bg-white text-amber-700 border border-amber-200 text-sm px-3 py-1">
-                                {getText(content.modal)}: Rs {formatINR(bestMarket.modalPrice)}
-                            </Badge>
+                <div className="rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 p-4 mb-4">
+                    <div className="flex flex-wrap justify-between gap-3">
+                        <div>
+                            <p className="font-semibold text-gray-900 flex items-center gap-1.5">
+                                <MapPin className="w-3.5 h-3.5 text-amber-600" />
+                                {selectedMandi}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                                {getText(content.district)}: {selectedDistrict}
+                            </p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                            {getText(content.updated)}:{' '}
+                            {new Date().toLocaleTimeString('en-IN', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                            })}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 text-sm">
+                        <div className="rounded-xl bg-white/80 border border-amber-100 p-2.5">
+                            <p className="text-xs text-gray-500">{getText(content.todayRate)}</p>
+                            <p className="font-semibold text-amber-700">Rs {formatINR(latest?.modalPrice || 0)}</p>
+                        </div>
+                        <div className="rounded-xl bg-white/80 border border-amber-100 p-2.5">
+                            <p className="text-xs text-gray-500">{getText(content.weekHigh)}</p>
+                            <p className="font-semibold text-emerald-700">Rs {formatINR(weekHigh)}</p>
+                        </div>
+                        <div className="rounded-xl bg-white/80 border border-amber-100 p-2.5">
+                            <p className="text-xs text-gray-500">{getText(content.weekLow)}</p>
+                            <p className="font-semibold text-slate-700">Rs {formatINR(weekLow)}</p>
+                        </div>
+                        <div className="rounded-xl bg-white/80 border border-amber-100 p-2.5">
+                            <p className="text-xs text-gray-500">{getText(content.trend)}</p>
+                            <p className="font-semibold inline-flex items-center gap-1">
+                                {getTrendIcon(weekTrend)}
+                                {getTrendLabel(weekTrend)}
+                            </p>
                         </div>
                     </div>
-                )}
+                </div>
 
-                <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-100">
+                <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-100 mb-4">
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50">
                             <tr className="text-left text-gray-600">
-                                <th className="px-3 py-2 font-medium">{getText(content.market)}</th>
-                                <th className="px-3 py-2 font-medium">{getText(content.district)}</th>
+                                <th className="px-3 py-2 font-medium">{getText(content.date)}</th>
+                                <th className="px-3 py-2 font-medium">{getText(content.mandi)}</th>
                                 <th className="px-3 py-2 font-medium">{getText(content.min)}</th>
                                 <th className="px-3 py-2 font-medium">{getText(content.modal)}</th>
                                 <th className="px-3 py-2 font-medium">{getText(content.max)}</th>
@@ -226,17 +413,17 @@ export default function MarketPrices({ crops = [], defaultState = 'Madhya Prades
                             </tr>
                         </thead>
                         <tbody>
-                            {prices.map((row) => (
-                                <tr key={row.mandi} className="border-t border-gray-100">
-                                    <td className="px-3 py-2 text-gray-800 font-medium">{row.mandi}</td>
-                                    <td className="px-3 py-2 text-gray-600">{row.district}</td>
+                            {trendRows.map((row) => (
+                                <tr key={`${row.dateLabel}-${row.mandi}`} className="border-t border-gray-100">
+                                    <td className="px-3 py-2 text-gray-800">{row.dateLabel}</td>
+                                    <td className="px-3 py-2 text-gray-600">{row.mandi}</td>
                                     <td className="px-3 py-2">Rs {formatINR(row.minPrice)}</td>
                                     <td className="px-3 py-2 font-semibold text-amber-700">Rs {formatINR(row.modalPrice)}</td>
                                     <td className="px-3 py-2">Rs {formatINR(row.maxPrice)}</td>
                                     <td className="px-3 py-2">
                                         <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs">
                                             {getTrendIcon(row.trend)}
-                                            {getTrendText(row.trend)}
+                                            {getTrendLabel(row.trend)}
                                         </span>
                                     </td>
                                 </tr>
@@ -245,17 +432,17 @@ export default function MarketPrices({ crops = [], defaultState = 'Madhya Prades
                     </table>
                 </div>
 
-                <div className="md:hidden space-y-2">
-                    {prices.map((row) => (
-                        <div key={row.mandi} className="rounded-xl border border-gray-100 bg-white p-3">
-                            <div className="flex items-start justify-between">
+                <div className="md:hidden space-y-2 mb-4">
+                    {trendRows.map((row) => (
+                        <div key={`${row.dateLabel}-${row.mandi}`} className="rounded-xl border border-gray-100 bg-white p-3">
+                            <div className="flex items-start justify-between gap-3">
                                 <div>
-                                    <p className="font-semibold text-gray-900">{row.mandi}</p>
-                                    <p className="text-xs text-gray-500">{row.district}</p>
+                                    <p className="font-semibold text-gray-900">{row.dateLabel}</p>
+                                    <p className="text-xs text-gray-500">{row.mandi}</p>
                                 </div>
                                 <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs">
                                     {getTrendIcon(row.trend)}
-                                    {getTrendText(row.trend)}
+                                    {getTrendLabel(row.trend)}
                                 </span>
                             </div>
                             <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
@@ -274,6 +461,25 @@ export default function MarketPrices({ crops = [], defaultState = 'Madhya Prades
                             </div>
                         </div>
                     ))}
+                </div>
+
+                <div>
+                    <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                        <CalendarDays className="w-3.5 h-3.5" />
+                        {getText(content.nearby)}
+                    </p>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                        {nearbyCards.map((card) => (
+                            <div key={card.label} className="rounded-xl border border-gray-100 bg-white p-3">
+                                <p className="text-xs text-gray-500 truncate">{card.label}</p>
+                                <p className="font-semibold text-gray-900 mt-1">Rs {formatINR(card.value)}</p>
+                                <p className="text-xs mt-1 inline-flex items-center gap-1">
+                                    {getTrendIcon(card.trend)}
+                                    {getTrendLabel(card.trend)} ({card.delta > 0 ? '+' : ''}{card.delta}%)
+                                </p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 <p className="text-xs text-gray-500 mt-3">

@@ -243,7 +243,7 @@ function DashboardContent() {
                             </div>
 
                             {/* Market Prices */}
-                            <div className="dashboard-card md:col-span-2 lg:col-span-2">
+                            <div id="market-prices" className="dashboard-card md:col-span-2 lg:col-span-2 scroll-mt-24">
                                 <MarketPrices
                                     crops={profile.crops}
                                     defaultState={profile.state}

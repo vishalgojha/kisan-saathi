@@ -145,6 +145,7 @@ Minimum launch checks:
 Workflows:
 - `.github/workflows/ci.yml`: PR/main quality gate
 - `.github/workflows/deploy.yml`: staging and production deployments
+- `.github/workflows/pages.yml`: GitHub Pages hosting deployment
 
 Optional GitHub Actions setup (repo-level):
 1. Add **Repository Variables**:
@@ -169,6 +170,20 @@ Default behavior with no repo variables:
 - `VITE_API_BASE_URL`: `https://example.invalid`
 - `VITE_WHATSAPP_NUMBER`: `919876543210`
 - `VITE_MONITORING_ENDPOINT`: `https://httpbin.org/post`
+
+## GitHub Pages Hosting
+
+To serve a public URL without external deploy hooks:
+1. Repo `Settings` -> `Pages`
+2. Source: `GitHub Actions`
+3. Run workflow: `Deploy GitHub Pages` (or push to `main`)
+
+Expected URL pattern:
+- `https://<github-username>.github.io/kisan-saathi/`
+
+Notes:
+- Deep links (`/dashboard`, `/aihelp`) are supported using a generated `404.html` SPA fallback.
+- Pages workflow uses mock data mode by default for stable public demo behavior.
 
 ## License
 

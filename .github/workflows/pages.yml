@@ -1,0 +1,73 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Pages Artifact
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
+      CI_PRODUCTION: true
+      VITE_APP_ID: ${{ vars.VITE_APP_ID || 'kisan-saathi-oss' }}
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://example.invalid' }}
+      VITE_WHATSAPP_NUMBER: ${{ vars.VITE_WHATSAPP_NUMBER || '919876543210' }}
+      VITE_UPLOAD_ENDPOINT: ${{ vars.VITE_UPLOAD_ENDPOINT || '' }}
+      VITE_DATA_MODE: mock
+      VITE_ALLOW_MOCK_FALLBACK: true
+      VITE_MONITORING_ENDPOINT: ${{ vars.VITE_MONITORING_ENDPOINT || 'https://httpbin.org/post' }}
+      VITE_MONITORING_API_KEY: ${{ secrets.VITE_MONITORING_API_KEY || '' }}
+      VITE_RELEASE_VERSION: ${{ github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Validate Env
+        run: npm run validate:env
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build with Pages Base Path
+        run: npm run build -- --base "/${{ github.event.repository.name }}/"
+
+      - name: SPA Fallback for Deep Links
+        run: cp dist/index.html dist/404.html
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -154,7 +154,7 @@ Required GitHub Actions setup (repo-level):
    - `VITE_UPLOAD_ENDPOINT`
    - `VITE_MONITORING_ENDPOINT`
 2. Add **Repository Secrets**:
-   - `DEPLOY_HOOK_URL` (fallback hook for both staging and production)
+   - `DEPLOY_HOOK_URL` (optional fallback hook for both staging and production)
    - Optional: `DEPLOY_HOOK_URL_STAGING` (overrides staging only)
    - Optional: `DEPLOY_HOOK_URL_PRODUCTION` (overrides production only)
    - Optional: `VITE_MONITORING_API_KEY`
@@ -162,6 +162,7 @@ Required GitHub Actions setup (repo-level):
 Deployment triggers:
 - Staging: automatic on push to `main`, or manual via `workflow_dispatch`
 - Production: automatic on tag push `v*`, or manual via `workflow_dispatch`
+- If no deploy hook URL is configured, workflow still passes and uploads `dist` as a GitHub Actions artifact.
 
 ## License
 

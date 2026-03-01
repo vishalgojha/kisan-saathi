@@ -146,7 +146,7 @@ Workflows:
 - `.github/workflows/ci.yml`: PR/main quality gate
 - `.github/workflows/deploy.yml`: staging and production deployments
 
-Required GitHub Actions setup (repo-level):
+Optional GitHub Actions setup (repo-level):
 1. Add **Repository Variables**:
    - `VITE_APP_ID`
    - `VITE_API_BASE_URL`
@@ -163,6 +163,12 @@ Deployment triggers:
 - Staging: automatic on push to `main`, or manual via `workflow_dispatch`
 - Production: automatic on tag push `v*`, or manual via `workflow_dispatch`
 - If no deploy hook URL is configured, workflow still passes and uploads `dist` as a GitHub Actions artifact.
+
+Default behavior with no repo variables:
+- `VITE_APP_ID`: `kisan-saathi-oss`
+- `VITE_API_BASE_URL`: `https://example.invalid`
+- `VITE_WHATSAPP_NUMBER`: `919876543210`
+- `VITE_MONITORING_ENDPOINT`: `https://httpbin.org/post`
 
 ## License
 

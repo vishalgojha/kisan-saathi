@@ -32,7 +32,6 @@ jobs:
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_dispatch' && (github.event.inputs.target == 'staging' || github.event.inputs.target == 'both'))
-    environment: staging
     env:
       NODE_ENV: production
       CI_PRODUCTION: true
@@ -60,6 +59,13 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Check Required Variables
+        run: |
+          if [ -z "${VITE_APP_ID}" ]; then echo "::error::Missing Actions variable VITE_APP_ID"; exit 1; fi
+          if [ -z "${VITE_API_BASE_URL}" ]; then echo "::error::Missing Actions variable VITE_API_BASE_URL"; exit 1; fi
+          if [ -z "${VITE_WHATSAPP_NUMBER}" ]; then echo "::error::Missing Actions variable VITE_WHATSAPP_NUMBER"; exit 1; fi
+          if [ -z "${VITE_MONITORING_ENDPOINT}" ]; then echo "::error::Missing Actions variable VITE_MONITORING_ENDPOINT"; exit 1; fi
+
       - name: Validate Env
         run: npm run validate:env
 
@@ -78,12 +84,14 @@ jobs:
       - name: Trigger Staging Deploy Hook
         env:
           DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+          DEPLOY_HOOK_URL_STAGING: ${{ secrets.DEPLOY_HOOK_URL_STAGING }}
         run: |
-          if [ -z "$DEPLOY_HOOK_URL" ]; then
-            echo "::error::Missing DEPLOY_HOOK_URL secret in staging environment."
+          HOOK_URL="${DEPLOY_HOOK_URL_STAGING:-$DEPLOY_HOOK_URL}"
+          if [ -z "$HOOK_URL" ]; then
+            echo "::error::Missing Actions secret DEPLOY_HOOK_URL (or DEPLOY_HOOK_URL_STAGING)."
             exit 1
           fi
-          curl -fsS -X POST "$DEPLOY_HOOK_URL" \
+          curl -fsS -X POST "$HOOK_URL" \
             -H "Content-Type: application/json" \
             -d "{\"environment\":\"staging\",\"sha\":\"${GITHUB_SHA}\"}"
 
@@ -93,7 +101,6 @@ jobs:
     if: |
       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
       (github.event_name == 'workflow_dispatch' && (github.event.inputs.target == 'production' || github.event.inputs.target == 'both'))
-    environment: production
     env:
       NODE_ENV: production
       CI_PRODUCTION: true
@@ -121,6 +128,13 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Check Required Variables
+        run: |
+          if [ -z "${VITE_APP_ID}" ]; then echo "::error::Missing Actions variable VITE_APP_ID"; exit 1; fi
+          if [ -z "${VITE_API_BASE_URL}" ]; then echo "::error::Missing Actions variable VITE_API_BASE_URL"; exit 1; fi
+          if [ -z "${VITE_WHATSAPP_NUMBER}" ]; then echo "::error::Missing Actions variable VITE_WHATSAPP_NUMBER"; exit 1; fi
+          if [ -z "${VITE_MONITORING_ENDPOINT}" ]; then echo "::error::Missing Actions variable VITE_MONITORING_ENDPOINT"; exit 1; fi
+
       - name: Validate Env
         run: npm run validate:env
 
@@ -139,11 +153,13 @@ jobs:
       - name: Trigger Production Deploy Hook
         env:
           DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+          DEPLOY_HOOK_URL_PRODUCTION: ${{ secrets.DEPLOY_HOOK_URL_PRODUCTION }}
         run: |
-          if [ -z "$DEPLOY_HOOK_URL" ]; then
-            echo "::error::Missing DEPLOY_HOOK_URL secret in production environment."
+          HOOK_URL="${DEPLOY_HOOK_URL_PRODUCTION:-$DEPLOY_HOOK_URL}"
+          if [ -z "$HOOK_URL" ]; then
+            echo "::error::Missing Actions secret DEPLOY_HOOK_URL (or DEPLOY_HOOK_URL_PRODUCTION)."
             exit 1
           fi
-          curl -fsS -X POST "$DEPLOY_HOOK_URL" \
+          curl -fsS -X POST "$HOOK_URL" \
             -H "Content-Type: application/json" \
             -d "{\"environment\":\"production\",\"sha\":\"${GITHUB_SHA}\",\"ref\":\"${GITHUB_REF}\"}"

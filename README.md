@@ -146,14 +146,18 @@ Workflows:
 - `.github/workflows/ci.yml`: PR/main quality gate
 - `.github/workflows/deploy.yml`: staging and production deployments
 
-Required GitHub Environment setup:
-1. Create environment `staging` with:
-   - Variables: `VITE_APP_ID`, `VITE_API_BASE_URL`, `VITE_WHATSAPP_NUMBER`, `VITE_UPLOAD_ENDPOINT`, `VITE_MONITORING_ENDPOINT`
-   - Secrets: `DEPLOY_HOOK_URL`, optional `VITE_MONITORING_API_KEY`
-2. Create environment `production` with:
-   - Variables: `VITE_APP_ID`, `VITE_API_BASE_URL`, `VITE_WHATSAPP_NUMBER`, `VITE_UPLOAD_ENDPOINT`, `VITE_MONITORING_ENDPOINT`
-   - Secrets: `DEPLOY_HOOK_URL`, optional `VITE_MONITORING_API_KEY`
-   - Recommended: required reviewers enabled
+Required GitHub Actions setup (repo-level):
+1. Add **Repository Variables**:
+   - `VITE_APP_ID`
+   - `VITE_API_BASE_URL`
+   - `VITE_WHATSAPP_NUMBER`
+   - `VITE_UPLOAD_ENDPOINT`
+   - `VITE_MONITORING_ENDPOINT`
+2. Add **Repository Secrets**:
+   - `DEPLOY_HOOK_URL` (fallback hook for both staging and production)
+   - Optional: `DEPLOY_HOOK_URL_STAGING` (overrides staging only)
+   - Optional: `DEPLOY_HOOK_URL_PRODUCTION` (overrides production only)
+   - Optional: `VITE_MONITORING_API_KEY`
 
 Deployment triggers:
 - Staging: automatic on push to `main`, or manual via `workflow_dispatch`
